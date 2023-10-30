@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>Test</title>
+    <style type="text/css" media="screen">
+        body {
+            overflow: hidden;
+        }
+
+        #editor {
+            height: 800px;
+            width: 49%
+        }
+    </style>
+</head>
+<body>
+<div style="display: flex; gap: 10px">
+    <div id="editor">
+## Ace 2
+# Ace 1
+
+
+Ace is a standalone code editor written in JavaScript. Our goal is to
+create a browser based [demo](http://ajaxorg.github.com/ace/) editor tha
+[demo](http://ajaxorg.github.com/ace/)
+
+[demo](http://ajaxorg.github.com/ace/)
+
+
+
+* Syntax highlighting [demo](http://ajaxorg.github.com/ace/)
+* Automatic indent and outdent
+
+
+
+5. x
+2. 5
+8) 5
+
+    </div>
+    <div id="markdown-result"></div>
+</div>
+
+
+<!--DEVEL-->
+<script type="text/javascript">
+    var os = /os=(\w+)|$/.exec(location.search)[1];
+    if (os) Object.defineProperty(navigator, "platform", {configurable:true, value: os});
+</script>
+<script src="../kitchen-sink/require.js" type="text/javascript"></script>
+<script>
+    // setup paths
+    require.config({paths: { "ace" : "../../src"}});
+    // load ace and extensions
+    require(["ace/ace", "ace/mode/markdown", "markdown_parser"], function(ace, codeLens) {
+        var editor = ace.edit("editor");
+        var renderMarkdown = require("markdown_parser").renderMarkdown;
+        editor.session.setMode("ace/mode/markdown");
+
+        var parentHtml = document.getElementById("markdown-result");
+
+        editor.session.doc.on("change", () => renderMarkdown(editor.getValue(), parentHtml));
+        window.editor = editor;
+        renderMarkdown(editor.getValue(), parentHtml);
+    });
+</script>
+<!--DEVEL-->
+
+<!--PACKAGE
+  <script src="src/ace.js" data-ace-base="src" type="text/javascript" charset="utf-8"></script>
+  <script src="demo/kitchen-sink/demo.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    require("kitchen-sink/demo");
+  </script>
+    PACKAGE-->
+
+</body>
+</html>
