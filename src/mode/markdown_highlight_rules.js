@@ -110,7 +110,7 @@ var MarkdownHighlightRules = function () {
     this.$rules = {
         "start": [
             { // HR * - _
-                token: "constant",
+                token: "constant.thematic_break",
                 regex: /^\s{0,2}(?:(?:\s?\*\s*){3,}|(?:\s?-\s*){3,}|(?:\s?_\s*){3,})\s*$/,
                 next: "start"
             }, {   // code block
@@ -147,9 +147,14 @@ var MarkdownHighlightRules = function () {
                 regex: /^\s{0,3}\-+(?=\s*$)/,
                 next: "start"
             }, { // HR * - _
-                token: "constant",
+                token: "constant.thematic_break",
                 regex: /^\s{0,2}(?:(?:\s?\*\s*){3,}|(?:\s?-\s*){3,}|(?:\s?_\s*){3,})\s*$/,
                 next: "start"
+            }, {
+                token: function (value) {
+                    return "markup.heading." + value.match(/#/g).length;
+                },
+                regex: /^\s{0,3}#{1,6}$/
             }, {
                 token: function (value) {
                     return "markup.heading." + value.match(/#/g).length;
@@ -386,7 +391,7 @@ var MarkdownHighlightRules = function () {
                 },
                 next: "blockquote"
             }, { // HR
-                token: "constant",
+                token: "constant.thematic_break",
                 regex: /^\s{0,2}(?:(?:\s?\*\s*){3,}|(?:\s?-\s*){3,}|(?:\s?_\s*){3,})\s*$/,
                 onMatch: function (value, scope, stack, line) {
                     var currentScope = scope.parent;
@@ -483,7 +488,7 @@ var MarkdownHighlightRules = function () {
                 },
                 next: "start"
             }, { // HR
-                token: "constant",
+                token: "constant.thematic_break",
                 regex: /^\s{0,2}(?:(?:\s?\*\s*){3,}|(?:\s?-\s*){3,}|(?:\s?_\s*){3,})\s*$/,
                 next: "start"
             }, {include: "containerBlockInlinesBlockquote"}, {include: "basic"}, {defaultToken: "string.blockquote"}
@@ -819,7 +824,7 @@ var MarkdownHighlightRules = function () {
                 regex: /(?<=[*+-]\s{1,4}|\d{1,9}[.)]\s{1,4})#{1,6}(?=\s|$)/,
                 push: "header"
             }, { // HR
-                token: "constant",
+                token: "constant.thematic_break",
                 regex: /(?<=[*+-]\s{1,4}|\d{1,9}[.)]\s{1,4})(?:(?:\s?\*\s*){3,}|(?:\s?-\s*){3,}|(?:\s?_\s*){3,})\s*$/,
                 next: "start"
             }
