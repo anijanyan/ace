@@ -36,6 +36,10 @@ var MarkdownHighlightRules = function () {
             var language = /[\w-]+|$/.exec(m[3])[0];
             // TODO lazy-load modes
             if (!modes[language]) language = "";
+            if (scope.name == "blockquote") {
+                return scope.parent.get("start").get(this.token);
+            }
+            
             var parent = scope.get("codeBlock" + language);
             parent.language = language;
             parent.indent = m[1].length;
@@ -201,6 +205,9 @@ var MarkdownHighlightRules = function () {
                 token: "support.function",
                 regex: /(`+)/,
                 onMatch: function (value, scope, stack, line) {
+                    if (scope.name === "paragraph") {
+                        scope = scope.parent.get("start");
+                    }
                     var parent = scope.get("codeSpan", value.length);
                     parent.codeNum = value.length;
                     return parent.get(this.token);
@@ -224,9 +231,12 @@ var MarkdownHighlightRules = function () {
                 regex: "(?<=[" + punctuation + "])[_](?=[^" + punctuationAndSpaces + "])|(?<=[" + punctuation
                     + "])[_](?=[^\\s]|^)|(?<=[\\s])[_](?=[^" + punctuationAndSpaces + "])|(?<=[\\s]|^)[_](?=[^\\s])",
                 push: "barEmphasisState"
+            }, { // extended autolink
+                token: "url.underline",
+                regex: /www\.[a-zA-Z0-9-_]+(\.[a-zA-Z0-9-_]+)*\.[a-zA-Z0-9-]+/
             }, { // autolink
-                token: ["text", "url", "text"],
-                regex: /(<)((?:[-.\w+]+@[-a-z0-9]+(?:\.[-a-z0-9]+)*\.[a-z]+)|(?:[a-zA-Z][a-zA-Z0-9+.-]+:[^\s><]*))(>)/
+                token: ["text", "url.underline", "text"],
+                regex: /(<)?((?:[-.\w+]+@[-a-z0-9]+(?:\.[-a-z0-9]+)*\.[a-z]+)|(?:[a-zA-Z][a-zA-Z0-9+.-]+:[^\s><]*))(>)?/
             }, {include: "tag"}, {
                 token: "comment",
                 regex: /<!--/,
@@ -332,11 +342,15 @@ var MarkdownHighlightRules = function () {
             {
                 token: "heading",
                 regex: /(?=$)/,
-                next: "pop"
+                onMatch: function (value, scope, stack, line) {
+                    return scope.parent.parent.get("start").get(this.token);
+                }
             }, {
                 token: "empty",
                 regex: /^\s*$/,
-                next: "pop"
+                onMatch: function (value, scope, stack, line) {
+                    return scope.parent.parent.get("start").get(this.token);
+                }
             }, {
                 include: "basic"
             }, {
@@ -908,7 +922,9 @@ var MarkdownHighlightRules = function () {
                     if (scope.parent.name === "markdown") {
                         return scope.parent.get("start").get(this.token);
                     }
-
+                    else if (scope.parent.name === "blockquote") {
+                        return scope.parent.parent.get("start").get(this.token);
+                    }
                     return scope.parent.get(this.token);
                 }
             }, {defaultToken: "support.function"}
