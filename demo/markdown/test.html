@@ -4,6 +4,12 @@
 <head>
     <title>Test</title>
     <style type="text/css" media="screen">
+        pre {
+            background-color: gray;
+        }
+        blockquote {
+            background-color: red;
+        }
         body {
             overflow: hidden;
         }
@@ -16,29 +22,10 @@
 </head>
 <body>
 <div style="display: flex; gap: 10px">
-    <div id="editor">
-## Ace 2
-# Ace 1
+    <div id="editor">```
 
 
-Ace is a standalone code editor written in JavaScript. Our goal is to
-create a browser based [demo](http://ajaxorg.github.com/ace/) editor tha
-[demo](http://ajaxorg.github.com/ace/)
-
-[demo](http://ajaxorg.github.com/ace/)
-
-
-
-* Syntax highlighting [demo](http://ajaxorg.github.com/ace/)
-* Automatic indent and outdent
-
-
-
-5. x
-2. 5
-8) 5
-
-    </div>
+```</div>
     <div id="markdown-result"></div>
 </div>
 
@@ -60,7 +47,7 @@ create a browser based [demo](http://ajaxorg.github.com/ace/) editor tha
 
         var parentHtml = document.getElementById("markdown-result");
 
-        editor.session.doc.on("change", () => renderMarkdown(editor.getValue(), parentHtml));
+        editor.on("input", () => renderMarkdown(editor.getValue(), parentHtml));
         window.editor = editor;
         renderMarkdown(editor.getValue(), parentHtml);
     });
