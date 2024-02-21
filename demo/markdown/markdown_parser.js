@@ -71,10 +71,17 @@ function parseMarkdown(string) {
     }
 
     function handleLinkTitle(value, isEscaped) {
+        if (isNewLine && parsedToken.title !== undefined)
+            parsedToken.title += "\n";
+        isNewLine = false;
         parsedToken.quot ||= value.substring(0, 1);
         parsedToken.title ||= "";
-        if (!isEscaped)
+        if (!isEscaped) {
             value = value.replaceAll(parsedToken.quot, "");
+            if (parsedToken.quot === "(")//TODO
+                value = value.replaceAll(")", "");
+        }
+
         value = value.replaceAll('"', "&quot;");
         parsedToken.title += value;
     }
@@ -153,15 +160,15 @@ function parseMarkdown(string) {
                 if (type.name === "linkDestination")
                     parsedToken.isReference = true;
                 return;
-            } else if (type.name === "paragraph") {//TODO handle this
-                if (value === "]")
-                    parsedToken.hasReference = true;
-
+            } else if (value === "]" || value === "],") {
+                parsedToken.hasReference = true;
+                return;
+            } else if (type.name === "paragraph" || type.name === "header") {
                 return;
             }
         }
 
-        let tagName = getTokenHtmlTag(type.name, value);
+        let tagName = getTokenHtmlTag(type.name);
 
         if (tagName) {
             switch (tagName) {
@@ -213,6 +220,12 @@ function parseMarkdown(string) {
                         openToken(tagName, {level: i});
                     }
                     return;
+                // case "rawHtml"://TODO
+                //     if (parsedToken && parsedToken.tagName === tagName)
+                //         return;
+                //     closeToken(Infinity);
+                //     openToken(tagName);
+                //     return;
                 default:
                     if (parsedToken && parsedToken.tagName === tagName)
                         return;
@@ -228,8 +241,12 @@ function parseMarkdown(string) {
         var params = {};
         switch (tagName) {
             case "code":
-                if (type.name !== "codeSpan")
+                if (type.name !== "codeSpan") {
                     openToken("pre");
+                } else {
+                    if (!parsedToken)
+                        openToken("p");
+                }
                 params.name = type.name;
                 switch (type.name) {
                     case "githubblock":
@@ -259,7 +276,7 @@ function parseMarkdown(string) {
         openToken(tagName, params);
     }
 
-    function getTokenHtmlTag(typeName, value) {
+    function getTokenHtmlTag(typeName) {
         switch (typeName) {
             case 'paragraph':
                 return "p";
@@ -285,6 +302,13 @@ function parseMarkdown(string) {
             case 'blockquoteInline':
             case 'blockquote':
                 return "blockquote";
+            // case "tag_stuff":
+            // case "comment":
+            // case "html":
+            //     return "rawHtml";
+            //     if (currToken.type.name.endsWith("tag-name.xml"))
+            //         return currToken.value;
+            //     return null;
             default:
                 return null;
         }
@@ -312,36 +336,40 @@ function parseMarkdown(string) {
         if (!parsedToken)
             return;
 
+        var parentToken = parsedToken.parentToken;
+
         if (parsedToken.isReference) {
             parsedTokens.push(parsedToken);
             parsedToken = null;
-            return;
+            if (parentToken.tagName === "p")
+                return;
         }
 
-        var parentToken = parsedToken.parentToken;
+        if (parsedToken) {
+            switch (parsedToken.tagName) {
+                case "header":
+                case "p":
+                    if (parsedToken.tagName === "p" && !parsedToken.children.length) {
+                        parsedToken = null;
+                        break;
+                    }
 
-        switch (parsedToken.tagName) {
-            case "header":
-            case "p":
-                if (parsedToken.tagName === "p" && !parsedToken.children.length) {
-                    parsedToken = null;
+                    var lastIndex = parsedToken.children.length - 1;
+                    var lastChild = parsedToken.children[lastIndex];
+                    if (lastChild && (lastChild === "\n" || lastChild.tagName === "br")) {
+                        parsedToken.children.pop();
+                    } else if (typeof lastChild === "string") {
+                        parsedToken.children[lastIndex] = lastChild.trimEnd();
+                    }
                     break;
-                }
-
-                var lastIndex = parsedToken.children.length - 1;
-                var lastChild = parsedToken.children[lastIndex];
-                if (lastChild && (lastChild === "\n" || lastChild.tagName === "br")) {
-                    parsedToken.children.pop();
-                } else if (typeof lastChild === "string") {
-                    parsedToken.children[lastIndex] = lastChild.trimEnd();
-                }
-                break;
-            case "li":
-                if (parsedToken.isUsingP && !parentToken.isUsingP) {
-                    useParagraphForList(parentToken);
-                }
-                break;
+                case "li":
+                    if (parsedToken.isUsingP && !parentToken.isUsingP) {
+                        useParagraphForList(parentToken);
+                    }
+                    break;
+            }
         }
+
         if (parentToken) {
             parsedToken && parentToken.children.push(parsedToken);
             parsedToken = parentToken;
@@ -404,8 +432,10 @@ function parseMarkdown(string) {
     var startState, lastToken, data, tokens, firstToken, firstTokenType, tokensLength;
 
     var isPreviousEmpty = false;
+    var shouldIgnoreLine, isNewLine;
     lines.forEach(function(line, i) {
-        var shouldIgnoreLine = false;
+        shouldIgnoreLine = false;
+        isNewLine = true;
 
         function parseToken(name, value, isStartLine) {
             function addChildValue() {
@@ -419,6 +449,10 @@ function parseMarkdown(string) {
                     return;
                 parsedToken.children.push(value);
             }
+            // if (parsedToken && parsedToken.tagName === "rawHtml") {
+            //     parsedToken.children.push(value);
+            //     return;
+            // }
             if (name.startsWith("markup.heading.")) {
                 if (/^#+$/.test(value) && parsedToken.tagName === "p") //TODO hacked
                     updateToken("header");
@@ -451,15 +485,19 @@ function parseMarkdown(string) {
                             value = value.replace(/ +#+ *$/, "");
                     } else if (name === "text" && (nextToken?.type.name === "url" || prevToken?.type.name === "url")) {
                         return;
-                    } else if (currToken.type.parent.name === "paragraph" && isLink(parsedToken) && value === "]") {//TODO
-                        closeToken(2);
-                        return;
+                    } else if (!currToken.type.parent.name.startsWith("linkDestination") && isLink(parsedToken) && value === "]") {
+                        closeToken();
+                        value = value.replace("]", "");
                     }
                     if (!parsedToken || !parsedToken.children.length || isStartLine)
                         value = value.trimStart();
 
                     return addChildValue();
                 case "support.function":
+                    if (!parsedToken) {
+                        console.log("Error: empty parsedToken");
+                        return;
+                    }
                     var parent = parsedToken.parentToken;
                     var indent = 4;
                     while (parent) {
@@ -634,6 +672,10 @@ function parseMarkdown(string) {
                 return;
 
             switch (parsedToken.tagName) {
+                // case "rawHtml":
+                //     if (!shouldClose(tokens[0]))
+                //         parsedToken.children.push("\n");
+                //     break;
                 case "p":
                 case "em":
                 case "strong":
@@ -737,9 +779,19 @@ function parseMarkdown(string) {
             }
         }
 
-        function shouldClose(typeName) {
+        function shouldClose(token) {
+            var typeName = token.type.name;
             if (!parsedToken)
                 return false;
+            // if (parsedToken.tagName === "rawHtml") {
+            //     var tokenType = token.type;
+            //     while (tokenType) {
+            //         if (getTokenHtmlTag(tokenType.name) === "rawHtml")
+            //             return false;
+            //         tokenType = tokenType.parent;
+            //     }
+            //     return true;
+            // }
             switch (typeName) {
                 case "empty":
                     return (parsedToken.tagName === "p" && !prevToken?.type.name.startsWith("string."))
@@ -748,17 +800,23 @@ function parseMarkdown(string) {
                     return isLink(parsedToken);
                 case "string.emphasis":
                     return (parsedToken.tagName === "em"
-                        && !["emphasisState", "barEmphasisState"].includes(currToken.type.parent.name));
+                        && !["emphasisState", "barEmphasisState"].includes(token.type.parent.name));
                 case "string.strong":
                     return (parsedToken.tagName === "strong"
-                        && !["strongState", "barStrongState"].includes(currToken.type.parent.name));
+                        && !["strongState", "barStrongState"].includes(token.type.parent.name));
                 default:
                     switch (parsedToken.tagName) {
                         case "code":
-                            return (parsedToken.name === "codeSpan" && /^`+$/.test(currToken.value.trim()));
+                            return (parsedToken.name === "codeSpan" && /^`+$/.test(token.value.trim()));
                         case "a":
                         case "img":
-                            return currToken.value === "[";
+                            if (token.type.name === "text") {
+                                return (token.value !== "]" && !token.type.parent.name.startsWith("link")) || token.value === "[";
+                            } else if (token.type.name.startsWith("constant")) {
+                                return false;
+                            } else {
+                                return !["punctuation", "paren.lpar", "markup.underline", "string"].includes(token.type.name);
+                            }
                     }
                     return false;
             }
@@ -782,11 +840,12 @@ function parseMarkdown(string) {
 
             var typeName = currToken.type.name;
 
-            if (shouldClose(typeName)) {
+            if (shouldClose(currToken)) {
+                var shouldContinue = parsedToken.tagName !== "a";//TODO
                 closeToken();
-                continue;
+                if (shouldContinue)
+                    continue;
             }
-
             if (typeName === "empty")
                 continue;
 
@@ -803,7 +862,7 @@ function renderMarkdown(string, parentHtml) {
     let parsedTokens = parseMarkdown(string);
 
     function getLinkLabel(token) {
-        return JSON.stringify(token.children.map(child => child.toLowerCase()));
+        return JSON.stringify(token.children.map(child => (typeof child === "string") ? child.toLowerCase() : ""));//TODO circular
     }
 
     function renderTokens(tokens, parentHtml) {
@@ -826,8 +885,13 @@ function renderMarkdown(string, parentHtml) {
                         if (token.hasReference) {
                             var label = getLinkLabel(token);
                             var foundToken = parsedTokens.find((value) => value.isReference && getLinkLabel(value) === label);
-                            if (foundToken)
+                            if (foundToken) {
                                 token = Object.assign(foundToken, token);
+                            } else {
+                                arr = "[" + token.children[0] + "]";
+                                token.children = null;
+                                break;
+                            }
                         }
 
                         token.href ||= "";
@@ -861,6 +925,8 @@ function renderMarkdown(string, parentHtml) {
                         if (token.info)
                             arr.push({"class": "language-" + token.info});
                         break;
+                    // case "rawHtml":
+                    //     continue;
                 }
                 let html = dom.buildDom(arr, parentHtml);
                 if (token.children && token.children.length)
