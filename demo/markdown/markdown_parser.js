@@ -140,6 +140,19 @@ function parseMarkdown(string) {
         return token && (token.tagName === "a" || token.tagName === "img")
     }
 
+    function getParent(token, tagName) {
+        while (token) {
+            if (token.tagName === tagName)
+                return token;
+            token = token.parentToken;
+        }
+        return null;
+    }
+
+    function hasParent(token, tagName) {
+        return getParent(token, tagName) != null;
+    }
+
     function buildTokenTree(type, value, childTag) {
         function tryBuildParent() {
             if (!type.parent)
@@ -176,11 +189,12 @@ function parseMarkdown(string) {
                     if (value.trim() === "") {
                         return;
                     } else if (parsedToken) {
-                        if (parsedToken.tagName === "p" && parsedToken.parentToken && parsedToken.parentToken.tagName === "li") {
+                        if (parsedToken.tagName === "p" && parsedToken.parentToken && parsedToken.parentToken.tagName === "li")
                             return;
-                        } else if ((parsedToken.tagName === tagName) && (!type.indent || type.indent === parsedToken.indent)) {
+                        if ((parsedToken.tagName === tagName) && (!type.indent || type.indent === parsedToken.indent))
                             return;
-                        }
+                        if (parsedToken.isRawHtml && currToken.type.name.endsWith(".xml"))
+                            return;
                     }
                     break;
                 case "p":
@@ -196,6 +210,15 @@ function parseMarkdown(string) {
                         var blockquoteToken;
                         if (parsedToken.tagName === tagName) {
                             blockquoteToken = parsedToken;
+                        } else if (parsedToken.isRawHtml) {
+                            var parent = parsedToken;
+                            while (parent) {
+                                if (parent.tagName === tagName) {
+                                    blockquoteToken = parent;
+                                    break;
+                                }
+                                parent = parent.parentToken;
+                            }
                         } else if (parsedToken.tagName === "p") {
                             if (!parsedToken.parentToken) {
                                 closeToken();
@@ -220,12 +243,31 @@ function parseMarkdown(string) {
                         openToken(tagName, {level: i});
                     }
                     return;
-                // case "rawHtml"://TODO
-                //     if (parsedToken && parsedToken.tagName === tagName)
-                //         return;
-                //     closeToken(Infinity);
-                //     openToken(tagName);
-                //     return;
+                case "rawHtml"://TODO
+                    if (currToken.type.name.endsWith("tag-name.xml")) {
+                        if (!prevToken.type.name.endsWith("tag-open.xml"))
+                            return;
+                        tagName = currToken.value;
+                        if (prevToken.type.name.endsWith("end-tag-open.xml")) {
+                            if (hasParent(parsedToken, tagName)) {
+                                var done = false;
+                                while (parsedToken && !done) {
+                                    done = parsedToken.tagName === tagName;
+                                    closeToken();
+                                }
+                            } else {
+                                openToken("htmlBlock", {isRawHtml: true});
+                                parsedToken.children.push("</", tagName, ">");
+                            }
+
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
+
+                    openToken(tagName, {isRawHtml: true});
+                    return;
                 default:
                     if (parsedToken && parsedToken.tagName === tagName)
                         return;
@@ -240,6 +282,9 @@ function parseMarkdown(string) {
 
         var params = {};
         switch (tagName) {
+            case "htmlBlock":
+                params["isRawHtml"] = true;
+                break;
             case "code":
                 if (type.name !== "codeSpan") {
                     openToken("pre");
@@ -302,13 +347,11 @@ function parseMarkdown(string) {
             case 'blockquoteInline':
             case 'blockquote':
                 return "blockquote";
-            // case "tag_stuff":
-            // case "comment":
-            // case "html":
-            //     return "rawHtml";
-            //     if (currToken.type.name.endsWith("tag-name.xml"))
-            //         return currToken.value;
-            //     return null;
+            case "tag_stuff":
+            case "comment":
+                return "rawHtml";
+            case "html":
+                return "htmlBlock"
             default:
                 return null;
         }
@@ -449,10 +492,7 @@ function parseMarkdown(string) {
                     return;
                 parsedToken.children.push(value);
             }
-            // if (parsedToken && parsedToken.tagName === "rawHtml") {
-            //     parsedToken.children.push(value);
-            //     return;
-            // }
+
             if (name.startsWith("markup.heading.")) {
                 if (/^#+$/.test(value) && parsedToken.tagName === "p") //TODO hacked
                     updateToken("header");
@@ -471,6 +511,28 @@ function parseMarkdown(string) {
                 parsedToken.parentToken.indent = indent;
                 return;
             }
+            if (name.endsWith(".xml")) {
+                var nameData = name.split(".");
+                var tagName = nameData[nameData.length - 2];
+                switch (tagName) {
+                    case "attribute-name":
+                        parsedToken["attributes"] ||= {};
+                        parsedToken.attributeName = value;
+                        return;
+                    case "attribute-value":
+                        parsedToken["attributes"][parsedToken.attributeName] ||= "";
+                        parsedToken["attributes"][parsedToken.attributeName] += value.replaceAll('"', "");//TODO
+                        if (value.endsWith('"'))
+                            parsedToken.attributeName = null;
+                        return;
+                    case "tag-close":
+                        parsedToken.doneAttributes = true;
+                        return;
+                }
+                return;
+            } else if (parsedToken && parsedToken.tagName === "htmlBlock") {
+                return addChildValue();
+            }
             switch (name) {
                 case "constant.thematic_break":
                     closeToken(Infinity);
@@ -479,6 +541,10 @@ function parseMarkdown(string) {
                 case "text":
                 case "heading":
                 case "constant":
+                    if (parsedToken && parsedToken.isRawHtml) {
+                        parsedToken.children.push(value);
+                        return;
+                    }
                     if (name === "heading") {
                         if ((!nextToken || nextToken.type.name !== "constant.language.escape")
                             && !(/^#+$/.test(value) && parsedToken.children[parsedToken.children.length - 1] === "#"))
@@ -566,7 +632,7 @@ function parseMarkdown(string) {
                         console.log("should not get here");
                         return;
                     }
-                    if (parsedToken.tagName !== "p")
+                    if (!parsedToken.isRawHtml && parsedToken.tagName !== "p")
                         openToken("p");
                     addChildValue();
                     return;
@@ -671,11 +737,70 @@ function parseMarkdown(string) {
             if (!parsedToken)
                 return;
 
+            if (parsedToken.isRawHtml) {
+                if (hasParent(parsedToken, "li"))
+                    return handleNewLineForLi();
+                if (isHtml(tokens[0]) || blockquoteCount > 0) {
+                    if (parsedToken.doneAttributes) {
+                        parsedToken.children.push("\n");
+                    } else if (parsedToken.attributeName) {
+                        parsedToken.attributes[parsedToken.attributeName] += "\n";
+                    }
+                }
+
+                return;
+            }
+
+            function handleNewLineForLi() {
+                var markupType = firstTokenType;
+                if (markupType === "indent" || firstTokenType === "string.blockquote") {
+                    if (tokens[1]) {
+                        markupType = tokens[1].type.name;
+                    }
+                    else {
+                        isPreviousEmpty = true;
+                        return;
+                    }
+                }
+
+                if (firstTokenType === "empty") {
+                    isPreviousEmpty = true;
+                    shouldIgnoreLine = true;
+                } else {
+                    if (markupType.startsWith("markup.list") || (markupType === "list" && firstTokenType
+                        === "indent" && isPreviousEmpty)) {
+                        var newIndent = markupType.startsWith("markup.list") ? Number(markupType.split(".")[2])
+                            : firstToken.value.length;
+                        while (parsedToken && (["li", "list"].includes(parsedToken.tagName) || parsedToken.isRawHtml)) {
+                            var listToken = parsedToken.isRawHtml ? getParent(parsedToken, "li") : parsedToken;
+                            var diff = newIndent - listToken.indent;
+
+                            if (diff >= 2)//should create sublist
+                                break;
+
+                            if (listToken.tagName === "list" && (diff === 0 || !listToken.parentToken))
+                                //should create list item in current list
+                                break;
+
+
+                            if (listToken.tagName === "li" && diff === 0 && !markupType.startsWith(
+                                "markup.list"))
+                                //is continuation of this li
+                                break;
+
+                            closeToken();
+
+                            if (diff > 0)
+                                break;
+                        }
+                    }
+                    if (isPreviousEmpty)
+                        parsedToken.tagName === "li" ? useParagraphForLi() : useParagraphForList(parsedToken);
+                }
+            }
+
+
             switch (parsedToken.tagName) {
-                // case "rawHtml":
-                //     if (!shouldClose(tokens[0]))
-                //         parsedToken.children.push("\n");
-                //     break;
                 case "p":
                 case "em":
                 case "strong":
@@ -728,70 +853,29 @@ function parseMarkdown(string) {
                     closeToken();
                     break;
                 case "li":
-                    var markupType = firstTokenType;
-                    if (markupType === "indent" || firstTokenType === "string.blockquote") {
-                        if (tokens[1]) {
-                            markupType = tokens[1].type.name;
-                        }
-                        else {
-                            isPreviousEmpty = true;
-                            break;
-                        }
-                    }
-
-                    if (firstTokenType === "empty") {
-                        isPreviousEmpty = true;
-                        shouldIgnoreLine = true;
-                        return;
-                    }
-                    else {
-                        if (markupType.startsWith("markup.list") || (markupType === "list" && firstTokenType
-                            === "indent" && isPreviousEmpty)) {
-                            var newIndent = markupType.startsWith("markup.list") ? Number(markupType.split(".")[2])
-                                : firstToken.value.length;
-                            while (parsedToken && ["li", "list"].includes(parsedToken.tagName)) {
-                                var diff = newIndent - parsedToken.indent;
-
-                                if (diff >= 2)//should create sublist
-                                    break;
-
-                                if (parsedToken.tagName === "list" && (diff === 0 || !parsedToken.parentToken))
-                                    //should create list item in current list
-                                    break;
-
-
-                                if (parsedToken.tagName === "li" && diff === 0 && !markupType.startsWith(
-                                    "markup.list"))
-                                    //is continuation of this li
-                                    break;
-
-                                closeToken();
-
-                                if (diff > 0)
-                                    break;
-                            }
-                        }
-                        if (isPreviousEmpty)
-                            parsedToken.tagName === "li" ? useParagraphForLi() : useParagraphForList(parsedToken);
-                    }
-
+                    handleNewLineForLi();
                     break;
             }
+        }
+
+        function isHtml(token) {
+            var tokenType = token.type;
+            while (tokenType) {
+                if (["html", "tag_stuff", "comment"].includes(tokenType.name))
+                    return true;
+                tokenType = tokenType.parent;
+            }
+            return false;
         }
 
         function shouldClose(token) {
             var typeName = token.type.name;
             if (!parsedToken)
                 return false;
-            // if (parsedToken.tagName === "rawHtml") {
-            //     var tokenType = token.type;
-            //     while (tokenType) {
-            //         if (getTokenHtmlTag(tokenType.name) === "rawHtml")
-            //             return false;
-            //         tokenType = tokenType.parent;
-            //     }
-            //     return true;
-            // }
+            if (parsedToken.isRawHtml) {
+                return (typeName === "empty" && !isHtml(token))
+                    || (parsedToken.tagName === "htmlBlock" && token.type.name.endsWith("tag-open.xml"));
+            }
             switch (typeName) {
                 case "empty":
                     return (parsedToken.tagName === "p" && !prevToken?.type.name.startsWith("string."))
@@ -876,6 +960,7 @@ function renderMarkdown(string, parentHtml) {
                     continue;
 
                 let arr = [token.tagName];
+                var params = {};
                 switch (token.tagName) {
                     case "a":
                     case "img":
@@ -888,15 +973,13 @@ function renderMarkdown(string, parentHtml) {
                             if (foundToken) {
                                 token = Object.assign(foundToken, token);
                             } else {
-                                arr = "[" + token.children[0] + "]";
-                                token.children = null;
-                                break;
+                                dom.buildDom("[" + token.children[0] + "]", parentHtml);
+                                continue;
                             }
                         }
 
                         token.href ||= "";
 
-                        var params = {};
                         if (token.tagName === "a") {
                             params["href"] = encodeURI(token.href);
                         } else {
@@ -906,7 +989,6 @@ function renderMarkdown(string, parentHtml) {
                         }
                         params["title"] = token.title;
 
-                        arr.push(params);
                         break;
                     case "list":
                         if (token.isOrdered) {
@@ -925,9 +1007,13 @@ function renderMarkdown(string, parentHtml) {
                         if (token.info)
                             arr.push({"class": "language-" + token.info});
                         break;
-                    // case "rawHtml":
-                    //     continue;
+                    case "htmlBlock":
+                        renderTokens(token.children, parentHtml);
+                        continue;
                 }
+                if (token.isRawHtml)
+                    params = token.attributes;
+                arr.push(params);
                 let html = dom.buildDom(arr, parentHtml);
                 if (token.children && token.children.length)
                     renderTokens(token.children, html);
