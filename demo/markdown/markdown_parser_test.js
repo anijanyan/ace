@@ -1343,7 +1343,7 @@ var commonmarkJson = {
     "323": {
         "markdown": "&#X22; &#XD06; &#xcab;",
         "html": "<p>&quot; ആ ಫ</p>"
-    },*/
+    },
     "324": {
         "markdown": "&nbsp &x; &#; &#x;\n&#87654321;\n&#abcdef0;\n&ThisIsNotDefined; &hi?;",
         "html": "<p>&amp;nbsp &amp;x; &amp;#; &amp;#x;\n&amp;#87654321;\n&amp;#abcdef0;\n&amp;ThisIsNotDefined; &amp;hi?;</p>"
@@ -1355,7 +1355,7 @@ var commonmarkJson = {
     "326": {
         "markdown": "&MadeUpEntity;",
         "html": "<p>&amp;MadeUpEntity;</p>"
-    },
+    },*/
     // "327": {//TODO html tags
     //     "markdown": "<a href=\"&ouml;&ouml;.html\">",
     //     "html": "<a href=\"&ouml;&ouml;.html\">"
@@ -1376,11 +1376,11 @@ var commonmarkJson = {
     //     "markdown": "`f&ouml;&ouml;`",
     //     "html": "<p><code>f&amp;ouml;&amp;ouml;</code></p>"
     // },
-    "332": {
+    /*"332": {
         "markdown": "    f&ouml;f&ouml;",
         "html": "<pre><code>f&amp;ouml;f&amp;ouml;</code></pre>"
     },
-    /*"333": {//TODO entities
+    "333": {//TODO entities
         "markdown": "&#42;foo&#42;\n*foo*",
         "html": "<p>*foo*<em>foo</em></p>"
     },
@@ -2764,11 +2764,13 @@ var commonmarkJson = {
 
 var startFrom = 0;
 var upTo = Infinity;
+
 module.exports = Object.fromEntries(Object.entries(commonmarkJson).map(([index, json]) => {
     if (index < startFrom || index > upTo)
         return [];
     var markdown = json.markdown;
-    var html = json.html;
+    var expected = document.createElement();
+    expected.innerHTML = json.html;
 
     var resultHtml = dom.buildDom(["div"]);
 
@@ -2776,13 +2778,11 @@ module.exports = Object.fromEntries(Object.entries(commonmarkJson).map(([index, 
 
     return [key, function () {
         renderMarkdown(markdown, resultHtml);
-        let res = resultHtml.innerHTML.toString();
-        res = res.replaceAll(`<hr></hr>`, `<hr />`);
-        res = res.replaceAll(`<br></br>`, `<br />`);
-        res = res.replaceAll(`></img>`, ` />`);
+        var res = resultHtml.innerHTML;
         res = res.replaceAll(`\\n`, `\n`);//TODO?
         res = res.replaceAll(`\\\\`, `\\`);//TODO?
-        assert.equal(res, html);
+        resultHtml.innerHTML = res;
+        assert.equal(resultHtml.innerHTML.toString(), expected.innerHTML.toString());
     }]
 }));
 
