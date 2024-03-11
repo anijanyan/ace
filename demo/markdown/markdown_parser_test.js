@@ -372,10 +372,10 @@ var commonmarkJson = {
         "markdown": "~~~\n<\n >\n~~~",
         "html": "<pre><code>&lt;\n &gt;</code></pre>"
     },
-    // "91": {//TODO paragraph
-    //     "markdown": "``\nfoo\n``",
-    //     "html": "<p><code>foo</code></p>"
-    // },
+    "91": {
+        "markdown": "``\nfoo\n``",
+        "html": "<p><code>foo</code></p>"
+    },
     "92": {
         "markdown": "```\naaa\n~~~\n```",
         "html": "<pre><code>aaa\n~~~</code></pre>"
@@ -482,7 +482,7 @@ var commonmarkJson = {
         "markdown": "```\n``` aaa\n```",
         "html": "<pre><code>``` aaa</code></pre>"
     },
-    // "118": {//TODO html
+    // "118": {//TODO
     //     "markdown": "<table><tr><td><pre>\n**Hello**,\n\n_world_.</pre></td></tr></table>",
     //     "html": "<table><tr><td><pre>\n**Hello**,<p><em>world</em>.</pre></p></td></tr></table>"
     // },
@@ -506,25 +506,17 @@ var commonmarkJson = {
         "markdown": "<DIV CLASS=\"foo\">\n\n*Markdown*\n</DIV>",
         "html": "<DIV CLASS=\"foo\"><p><em>Markdown</em></p></DIV>"
     },
-    // "123": {
-    //     "markdown": "<div id=\"foo\"\n  class=\"bar\"></div>",
-    //     "html": "<div id=\"foo\"\n  class=\"bar\"></div>"
-    // },
     "123": {
         "markdown": "<div id=\"foo\"\n  class=\"bar\"></div>",
-        "html": "<div id=\"foo\" class=\"bar\"></div>"
+        "html": "<div id=\"foo\"\n  class=\"bar\"></div>"
     },
     "124": {
         "markdown": "<div id=\"foo\" class=\"bar\n  baz\"></div>",
         "html": "<div id=\"foo\" class=\"bar\n  baz\"></div>"
     },
-    // "125": {
-    //     "markdown": "<div>\n*foo*\n\n*bar*",
-    //     "html": "<div>\n*foo*<p><em>bar</em></p>"
-    // },
     "125": {
         "markdown": "<div>\n*foo*\n\n*bar*",
-        "html": "<div>\n*foo*<p><em>bar</em></p></div>"
+        "html": "<div>\n*foo*<p><em>bar</em></p>"
     },
     /*"126": {//TODO garbage unclosed tags
         "markdown": "<div id=\"foo\"\n*hi*",
@@ -582,11 +574,11 @@ var commonmarkJson = {
     //     "markdown": "<del>*foo*</del>",
     //     "html": "<p><del><em>foo</em></del></p>"
     // },
-    /*"139": {//TODO HTML tags designed to contain literal content
-        "markdown": "<pre language=\"haskell\"><code>\nimport Text.HTML.TagSoup\n\nmain :: IO ()\nmain = print $ parseTags tags</code></pre>\nokay",
-        "html": "<pre language=\"haskell\"><code>\nimport Text.HTML.TagSoup\n\nmain :: IO ()\nmain = print $ parseTags tags</code></pre><p>okay</p>"
-    },
-    "140": {
+    // "139": {//TODO HTML tags designed to contain literal content
+    //     "markdown": "<pre language=\"haskell\"><code>\nimport Text.HTML.TagSoup\n\nmain :: IO ()\nmain = print $ parseTags tags</code></pre>\nokay",
+    //     "html": "<pre language=\"haskell\"><code>\nimport Text.HTML.TagSoup\n\nmain :: IO ()\nmain = print $ parseTags tags</code></pre><p>okay</p>"
+    // },
+    /*"140": {
         "markdown": "<script type=\"text/javascript\">\n// JavaScript example\n\ndocument.getElementById(\"demo\").innerHTML = \"Hello JavaScript!\";</script>\nokay",
         "html": "<script type=\"text/javascript\">\n// JavaScript example\n\ndocument.getElementById(\"demo\").innerHTML = \"Hello JavaScript!\";</script><p>okay</p>"
     },
@@ -618,7 +610,7 @@ var commonmarkJson = {
     //     "markdown": "<style>p{color:red;}</style>\n*foo*",
     //     "html": "<style>p{color:red;}</style><p><em>foo</em></p>"
     // },
-    // "146": {//TODO comment
+    // "146": {//TODO comment *baz* should not be emphasys
     //     "markdown": "<!-- foo -->*bar*\n*baz*",
     //     "html": "<!-- foo -->*bar*<p><em>baz</em></p>"
     // },
@@ -626,10 +618,10 @@ var commonmarkJson = {
     //     "markdown": "<script>\nfoo</script>1. *bar*",
     //     "html": "<script>\nfoo</script>1. *bar*"
     // },
-    // "148": {//TODO comment
-    //     "markdown": "<!-- Foo\n\nbar\n   baz -->\nokay",
-    //     "html": "<!-- Foo\n\nbar\n   baz --><p>okay</p>"
-    // },
+    "148": {
+        "markdown": "<!-- Foo\n\nbar\n   baz -->\nokay",
+        "html": "<!-- Foo\n\nbar\n   baz --><p>okay</p>"
+    },
     // "149": {//TODO HTML tags designed to contain literal content
     //     "markdown": "<?php\n\n  echo '>';\n\n?>\nokay",
     //     "html": "<?php\n\n  echo '>';\n\n?><p>okay</p>"
@@ -646,10 +638,10 @@ var commonmarkJson = {
     //     "markdown": "  <!-- foo -->\n\n    <!-- foo -->",
     //     "html": "  <!-- foo --><pre><code>&lt;!-- foo --&gt;</code></pre>"
     // },
-    // "153": {
-    //     "markdown": "  <div>\n\n    <div>",
-    //     "html": "  <div><pre><code>&lt;div&gt;</code></pre>"
-    // },
+    "152": {//TODO comment
+        "markdown": "  <!-- foo -->\n\n    <!-- foo -->",
+        "html": "<!-- foo --><pre><code>&lt;!-- foo --&gt;</code></pre>"
+    },
     "153": {
         "markdown": "  <div>\n\n    <div>",
         "html": "  <div><pre><code>&lt;div&gt;</code></pre></div>"
@@ -682,7 +674,7 @@ var commonmarkJson = {
         "markdown": "<table>\n<tr>\n<td>\nHi</td>\n</tr>\n</table>",
         "html": "<table>\n<tr>\n<td>\nHi</td>\n</tr>\n</table>"
     },
-    // "160": {
+    // "160": {//TODO newlines are not correct
     //     "markdown": "<table>\n\n  <tr>\n\n    <td>\n      Hi\n    </td>\n\n  </tr>\n</table>",
     //     "html": "<table>\n  <tr><pre><code>&lt;td&gt;\n  Hi\n&lt;/td&gt;</code></pre>\n  </tr></table>"
     // },
@@ -778,7 +770,7 @@ var commonmarkJson = {
     //     "markdown": "Foo\n[bar]: /baz\n\n[bar]",
     //     "html": "<p>Foo\n[bar]: /baz</p><p>[bar]</p>"
     // },
-    "183": {//TODO > bar should not be heading
+    "183": {
         "markdown": "# [Foo]\n[foo]: /url\n> bar",
         "html": "<h1><a href=\"/url\">Foo</a></h1><blockquote><p>bar</p></blockquote>"
     },
@@ -996,7 +988,7 @@ var commonmarkJson = {
         "markdown": " -    one\n\n      two",
         "html": "<ul><li><p>one</p><p>two</p></li></ul>"
     },
-    // "237": {TODO wrong token: two should be list, not support.function
+    // "237": {//TODO wrong token: two should be list, not support.function
     //     "markdown": "   > > 1.  one\n>>\n>>     two",
     //     "html": "<blockquote><blockquote><ol><li><p>one</p><p>two</p></li></ol></blockquote></blockquote>"
     // },
@@ -1200,14 +1192,14 @@ var commonmarkJson = {
         "markdown": "- foo\n  - bar\n    - baz\n\n\n      bim",
         "html": "<ul><li>foo<ul><li>bar<ul><li><p>baz</p><p>bim</p></li></ul></li></ul></li></ul>"
     },
-    // "288": {//TODO comment
-    //     "markdown": "- foo\n- bar\n<!-- -->\n\n- baz\n- bim",
-    //     "html": "<ul><li>foo</li><li>bar</li></ul><!-- --><ul><li>baz</li><li>bim</li></ul>"
-    // },
-    // "289": {//TODO comment
-    //     "markdown": "-   foo\n\n    notcode\n\n-   foo\n<!-- -->\n\n    code",
-    //     "html": "<ul><li><p>foo</p><p>notcode</p></li><li><p>foo</p></li></ul><!-- --><pre><code>code</code></pre>"
-    // },
+    "288": {
+        "markdown": "- foo\n- bar\n<!-- -->\n\n- baz\n- bim",
+        "html": "<ul><li>foo</li><li>bar</li></ul><!-- --><ul><li>baz</li><li>bim</li></ul>"
+    },
+    "289": {
+        "markdown": "-   foo\n\n    notcode\n\n-   foo\n<!-- -->\n\n    code",
+        "html": "<ul><li><p>foo</p><p>notcode</p></li><li><p>foo</p></li></ul><!-- --><pre><code>code</code></pre>"
+    },
     "290": {
         "markdown": "- a\n - b\n  - c\n   - d\n  - e\n - f\n- g",
         "html": "<ul><li>a</li><li>b</li><li>c</li><li>d</li><li>e</li><li>f</li><li>g</li></ul>"
@@ -1280,10 +1272,10 @@ var commonmarkJson = {
     //     "markdown": "`hi`lo`",
     //     "html": "<p><code>hi</code>lo`</p>"
     // },
-    // "308": {//TODO quote signs escape
-    //     "markdown": "\\!\\\"\\#\\$\\%\\&\\'\\(\\)\\*\\+\\,\\-\\.\\/\\:\\;\\<\\=\\>\\?\\@\\[\\\\\\]\\^\\_\\`\\{\\|\\}\\~",
-    //     "html": "<p>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~</p>"
-    // },
+    "308": {
+        "markdown": "\\!\\\"\\#\\$\\%\\&\\'\\(\\)\\*\\+\\,\\-\\.\\/\\:\\;\\<\\=\\>\\?\\@\\[\\\\\\]\\^\\_\\`\\{\\|\\}\\~",
+        "html": "<p>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~</p>"
+    },
     "309": {
         "markdown": "\\\t\\A\\a\\ \\3\\φ\\«",
         "html": "<p>\\\t\\A\\a\\ \\3\\φ\\«</p>"
@@ -1300,7 +1292,7 @@ var commonmarkJson = {
         "markdown": "foo\\\nbar",
         "html": "<p>foo<br />\nbar</p>"
     },
-    "313": {//TODO wrong token (paragraph missing)
+    "313": {
         "markdown": "`` \\[\\` ``",
         "html": "<p><code>\\[\\`</code></p>"
     },
@@ -1316,10 +1308,10 @@ var commonmarkJson = {
         "markdown": "<http://example.com?find=\\*>",
         "html": "<p><a href=\"http://example.com?find=%5C*\">http://example.com?find=\\*</a></p>"
     },
-    // "317": {//TODO escapes raw html
-    //     "markdown": "<a href=\"/bar\\/)\">",
-    //     "html": "<a href=\"/bar\\/)\">"
-    // },
+    "317": {
+        "markdown": "<a href=\"/bar\\/)\">",
+        "html": "<a href=\"/bar\\/)\">"
+    },
     // "318": {//TODO escape in url
     //     "markdown": "[foo](/bar\\* \"ti\\*tle\")",
     //     "html": "<p><a href=\"/bar*\" title=\"ti*tle\">foo</a></p>"
@@ -1332,22 +1324,22 @@ var commonmarkJson = {
     //     "markdown": "``` foo\\+bar\nfoo\n```",
     //     "html": "<pre><code class=\"language-foo+bar\">foo</code></pre>"
     // },
-    /*"321": {//TODO entities
-        "markdown": "&nbsp; &amp; &copy; &AElig; &Dcaron;\n&frac34; &HilbertSpace; &DifferentialD;\n&ClockwiseContourIntegral; &ngE;",
-        "html": "<p>  &amp; © Æ Ď\n¾ ℋ ⅆ\n∲ ≧̸</p>"
-    },
-    "322": {
-        "markdown": "&#35; &#1234; &#992; &#0;",
-        "html": "<p># Ӓ Ϡ �</p>"
-    },
-    "323": {
-        "markdown": "&#X22; &#XD06; &#xcab;",
-        "html": "<p>&quot; ആ ಫ</p>"
-    },
-    "324": {
-        "markdown": "&nbsp &x; &#; &#x;\n&#87654321;\n&#abcdef0;\n&ThisIsNotDefined; &hi?;",
-        "html": "<p>&amp;nbsp &amp;x; &amp;#; &amp;#x;\n&amp;#87654321;\n&amp;#abcdef0;\n&amp;ThisIsNotDefined; &amp;hi?;</p>"
-    },
+    // "321": {//TODO unsupported entities
+    //     "markdown": "&nbsp; &amp; &copy; &AElig; &Dcaron;\n&frac34; &HilbertSpace; &DifferentialD;\n&ClockwiseContourIntegral; &ngE;",
+    //     "html": "<p>  &amp; © Æ Ď\n¾ ℋ ⅆ\n∲ ≧̸</p>"
+    // },
+    // "322": {
+    //     "markdown": "&#35; &#1234; &#992; &#0;",
+    //     "html": "<p># Ӓ Ϡ �</p>"
+    // },
+    // "323": {
+    //     "markdown": "&#X22; &#XD06; &#xcab;",
+    //     "html": "<p>&quot; ആ ಫ</p>"
+    // },
+    // "324": {
+    //     "markdown": "&nbsp &x; &#; &#x;\n&#87654321;\n&#abcdef0;\n&ThisIsNotDefined; &hi?;",
+    //     "html": "<p>&amp;nbsp &amp;x; &amp;#; &amp;#x;\n&amp;#87654321;\n&amp;#abcdef0;\n&amp;ThisIsNotDefined; &amp;hi?;</p>"
+    // },
     "325": {
         "markdown": "&copy",
         "html": "<p>&amp;copy</p>"
@@ -1355,12 +1347,12 @@ var commonmarkJson = {
     "326": {
         "markdown": "&MadeUpEntity;",
         "html": "<p>&amp;MadeUpEntity;</p>"
-    },*/
-    // "327": {//TODO html tags
-    //     "markdown": "<a href=\"&ouml;&ouml;.html\">",
-    //     "html": "<a href=\"&ouml;&ouml;.html\">"
-    // },
-    /*"328": {TODO entities
+    },
+    /*"327": {//Entity in URLs, link titles, and fenced code block info strings
+        "markdown": "<a href=\"&ouml;&ouml;.html\">",
+        "html": "<a href=\"&ouml;&ouml;.html\">"
+    },
+    "328": {
         "markdown": "[foo](/f&ouml;&ouml; \"f&ouml;&ouml;\")",
         "html": "<p><a href=\"/f%C3%B6%C3%B6\" title=\"föö\">foo</a></p>"
     },
@@ -1372,17 +1364,17 @@ var commonmarkJson = {
         "markdown": "``` f&ouml;&ouml;\nfoo\n```",
         "html": "<pre><code class=\"language-föö\">foo</code></pre>"
     },*/
-    // "331": {//TODO missing p token
-    //     "markdown": "`f&ouml;&ouml;`",
-    //     "html": "<p><code>f&amp;ouml;&amp;ouml;</code></p>"
-    // },
-    /*"332": {
+    "331": {
+        "markdown": "`f&ouml;&ouml;`",
+        "html": "<p><code>f&amp;ouml;&amp;ouml;</code></p>"
+    },
+    "332": {
         "markdown": "    f&ouml;f&ouml;",
         "html": "<pre><code>f&amp;ouml;f&amp;ouml;</code></pre>"
     },
-    "333": {//TODO entities
+    "333": {
         "markdown": "&#42;foo&#42;\n*foo*",
-        "html": "<p>*foo*<em>foo</em></p>"
+        "html": "<p>*foo*\n<em>foo</em></p>"
     },
     "334": {
         "markdown": "&#42; foo\n\n* foo",
@@ -1396,10 +1388,10 @@ var commonmarkJson = {
         "markdown": "&#9;foo",
         "html": "<p>\tfoo</p>"
     },
-    "337": {
-        "markdown": "[a](url &quot;tit&quot;)",
-        "html": "<p>[a](url &quot;tit&quot;)</p>"
-    },*/
+    // "337": {//TODO invalid url
+    //     "markdown": "[a](url &quot;tit&quot;)",
+    //     "html": "<p>[a](url &quot;tit&quot;)</p>"
+    // },
     "338": {
         "markdown": "`foo`",
         "html": "<p><code>foo</code></p>"
@@ -1468,7 +1460,7 @@ var commonmarkJson = {
     //     "markdown": "<a href=\"`\">`",
     //     "html": "<p><a href=\"`\">`</p>"
     // },
-    // "355": {TODO wrong token: last ` should not open code block
+    // "355": {//TODO wrong token: last ` should not open code block
     //     "markdown": "`<http://foo.bar.`baz>`",
     //     "html": "<p><code>&lt;http://foo.bar.</code>baz&gt;`</p>"
     // },
@@ -1496,10 +1488,10 @@ var commonmarkJson = {
         "markdown": "a * foo bar*",
         "html": "<p>a * foo bar*</p>"
     },
-    // "362": {//TODO quotes
-    //     "markdown": "a*\"foo\"*",
-    //     "html": "<p>a*&quot;foo&quot;*</p>"
-    // },
+    "362": {
+        "markdown": "a*\"foo\"*",
+        "html": "<p>a*&quot;foo&quot;*</p>"
+    },
     // "363": {//TODO wrong example?!!! why is not list?
     //     "markdown": "* a *",
     //     "html": "<p>* a *</p>"
@@ -1520,10 +1512,10 @@ var commonmarkJson = {
         "markdown": "_ foo bar_",
         "html": "<p>_ foo bar_</p>"
     },
-    // "368": {//TODO quote
-    //     "markdown": "a_\"foo\"_",
-    //     "html": "<p>a_&quot;foo&quot;_</p>"
-    // },
+    "368": {
+        "markdown": "a_\"foo\"_",
+        "html": "<p>a_&quot;foo&quot;_</p>"
+    },
     "369": {
         "markdown": "foo_bar_",
         "html": "<p>foo_bar_</p>"
@@ -1664,10 +1656,10 @@ var commonmarkJson = {
         "markdown": "**Gomphocarpus (*Gomphocarpus physocarpus*, syn.\n*Asclepias physocarpa*)**",
         "html": "<p><strong>Gomphocarpus (<em>Gomphocarpus physocarpus</em>, syn.\n<em>Asclepias physocarpa</em>)</strong></p>"
     },
-    // "404": {//TODO quots
-    //     "markdown": "**foo \"*bar*\" foo**",
-    //     "html": "<p><strong>foo &quot;<em>bar</em>&quot; foo</strong></p>"
-    // },
+    "404": {
+        "markdown": "**foo \"*bar*\" foo**",
+        "html": "<p><strong>foo &quot;<em>bar</em>&quot; foo</strong></p>"
+    },
     "405": {
         "markdown": "**foo**bar",
         "html": "<p><strong>foo</strong>bar</p>"
@@ -1740,15 +1732,15 @@ var commonmarkJson = {
     //     "markdown": "***foo** bar*",
     //     "html": "<p><em><strong>foo</strong> bar</em></p>"
     // },
-    // "423": {
-    //     "markdown": "*foo **bar***",
-    //     "html": "<p><em>foo <strong>bar</strong></em></p>"
-    // },
-    // "424": {
-    //     "markdown": "*foo**bar***",
-    //     "html": "<p><em>foo<strong>bar</strong></em></p>"
-    // },
-    // "425": {
+    "423": {
+        "markdown": "*foo **bar***",
+        "html": "<p><em>foo <strong>bar</strong></em></p>"
+    },
+    "424": {
+        "markdown": "*foo**bar***",
+        "html": "<p><em>foo<strong>bar</strong></em></p>"
+    },
+    // "425": {//TODO nested emphasys
     //     "markdown": "foo***bar***baz",
     //     "html": "<p>foo<em><strong>bar</strong></em>baz</p>"
     // },
@@ -1808,11 +1800,11 @@ var commonmarkJson = {
     //     "markdown": "***foo* bar**",
     //     "html": "<p><strong><em>foo</em> bar</strong></p>"
     // },
-    // "440": {
-    //     "markdown": "**foo *bar***",
-    //     "html": "<p><strong>foo <em>bar</em></strong></p>"
-    // },
-    // "441": {
+    "440": {
+        "markdown": "**foo *bar***",
+        "html": "<p><strong>foo <em>bar</em></strong></p>"
+    },
+    // "441": {//TODO nested
     //     "markdown": "**foo *bar **baz**\nbim* bop**",
     //     "html": "<p><strong>foo <em>bar <strong>baz</strong>\nbim</em> bop</strong></p>"
     // },
@@ -1832,14 +1824,14 @@ var commonmarkJson = {
         "markdown": "foo ***",
         "html": "<p>foo ***</p>"
     },
-    /*"446": {//TODO why last * doesn't have emphasysstate parent?
-        "markdown": "foo *\\**",
-        "html": "<p>foo <em>*</em></p>"
-    },
-    "447": {//TODO wrong token: last * is going into baremphasysstate
-        "markdown": "foo *_*",
-        "html": "<p>foo <em>_</em></p>"
-    },*/
+    // "446": {//TODO why last * doesn't have emphasysstate parent?
+    //     "markdown": "foo *\\**",
+    //     "html": "<p>foo <em>*</em></p>"
+    // },
+    // "447": {//TODO wrong token: last * is going into baremphasysstate
+    //     "markdown": "foo *_*",
+    //     "html": "<p>foo <em>_</em></p>"
+    // },
     "448": {
         "markdown": "foo *****",
         "html": "<p>foo *****</p>"
@@ -1984,11 +1976,11 @@ var commonmarkJson = {
     //     "markdown": "_foo [bar_](/url)",
     //     "html": "<p>_foo <a href=\"/url\">bar_</a></p>"
     // },
-    // "484": {
-    //     "markdown": "*<img src=\"foo\" title=\"*\"/>",
-    //     "html": "<p>*<img src=\"foo\" title=\"*\"/></p>"
-    // },
-    // "485": {
+    "484": {
+        "markdown": "*<img src=\"foo\" title=\"*\"/>",
+        "html": "<p>*<img src=\"foo\" title=\"*\"/></p>"
+    },
+    // "485": {//TODO wrong token
     //     "markdown": "**<a href=\"**\">",
     //     "html": "<p>**<a href=\"**\"></p>"
     // },
@@ -1996,14 +1988,14 @@ var commonmarkJson = {
     //     "markdown": "__<a href=\"__\">",
     //     "html": "<p>__<a href=\"__\"></p>"
     // },
-    /*"487": {//TODO
+    "487": {
         "markdown": "*a `*`*",
         "html": "<p><em>a <code>*</code></em></p>"
     },
     "488": {
         "markdown": "_a `_`_",
         "html": "<p><em>a <code>_</code></em></p>"
-    },*/
+    },
     // "489": {//TODO wrong token
     //     "markdown": "**a<http://foo.bar/?q=**>",
     //     "html": "<p>**a<a href=\"http://foo.bar/?q=**\">http://foo.bar/?q=**</a></p>"
@@ -2044,10 +2036,10 @@ var commonmarkJson = {
     //     "markdown": "[link](/my uri)",
     //     "html": "<p>[link](/my uri)</p>"
     // },
-    // "499": {//TODO url escape space
-    //     "markdown": "[link](</my uri>)",
-    //     "html": "<p><a href=\"/my%20uri\">link</a></p>"
-    // },
+    "499": {
+        "markdown": "[link](</my uri>)",
+        "html": "<p><a href=\"/my%20uri\">link</a></p>"
+    },
     // "500": {//TODO wrong token: destination cannot contain line breaks
     //     "markdown": "[link](foo\nbar)",
     //     "html": "<p>[link](foo\nbar)</p>"
@@ -2092,7 +2084,7 @@ var commonmarkJson = {
         "markdown": "[link](#fragment)\n\n[link](http://example.com#fragment)\n\n[link](http://example.com?foo=3#frag)",
         "html": "<p><a href=\"#fragment\">link</a></p><p><a href=\"http://example.com#fragment\">link</a></p><p><a href=\"http://example.com?foo=3#frag\">link</a></p>"
     },
-    "511": {//TODO url escape \
+    "511": {
         "markdown": "[link](foo\\bar)",
         "html": "<p><a href=\"foo%5Cbar\">link</a></p>"
     },
@@ -2100,7 +2092,7 @@ var commonmarkJson = {
     //     "markdown": "[link](foo%20b&auml;)",
     //     "html": "<p><a href=\"foo%20b%C3%A4\">link</a></p>"
     // },
-    "513": {//TODO encode "
+    "513": {
         "markdown": "[link](\"title\")",
         "html": "<p><a href=\"%22title%22\">link</a></p>"
     },
@@ -2108,7 +2100,7 @@ var commonmarkJson = {
         "markdown": "[link](/url \"title\")\n[link](/url 'title')\n[link](/url (title))",
         "html": "<p><a href=\"/url\" title=\"title\">link</a><a href=\"/url\" title=\"title\">link</a><a href=\"/url\" title=\"title\">link</a></p>"
     },
-    "515": {//TODO escaped quot
+    "515": {
         "markdown": "[link](/url \"title \\\"&quot;\")",
         "html": "<p><a href=\"/url\" title=\"title &quot;&quot;\">link</a></p>"
     },
@@ -2128,26 +2120,26 @@ var commonmarkJson = {
         "markdown": "[link](   /uri\n  \"title\"  )",
         "html": "<p><a href=\"/uri\" title=\"title\">link</a></p>"
     },
-    // "520": {//TODO wrong token: space is not allowed
-    //     "markdown": "[link] (/uri)",
-    //     "html": "<p>[link] (/uri)</p>"
-    // },
+    "520": {
+        "markdown": "[link] (/uri)",
+        "html": "<p>[link] (/uri)</p>"
+    },
     // "521": {//TODO nested brackets
     //     "markdown": "[link [foo [bar]]](/uri)",
     //     "html": "<p><a href=\"/uri\">link [foo [bar]]</a></p>"
     // },
-    // "522": {
-    //     "markdown": "[link] bar](/uri)",
-    //     "html": "<p>[link] bar](/uri)</p>"
-    // },
-    // "523": {
+    "522": {
+        "markdown": "[link] bar](/uri)",
+        "html": "<p>[link] bar](/uri)</p>"
+    },
+    // "523": {//TODO
     //     "markdown": "[link [bar](/uri)",
     //     "html": "<p>[link <a href=\"/uri\">bar</a></p>"
     // },
-    // "524": {
-    //     "markdown": "[link \\[bar](/uri)",
-    //     "html": "<p><a href=\"/uri\">link [bar</a></p>"
-    // },
+    "524": {
+        "markdown": "[link \\[bar](/uri)",
+        "html": "<p><a href=\"/uri\">link [bar</a></p>"
+    },
     "525": {
         "markdown": "[link *foo **bar** `#`*](/uri)",
         "html": "<p><a href=\"/uri\">link <em>foo <strong>bar</strong> <code>#</code></em></a></p>"
@@ -2192,98 +2184,98 @@ var commonmarkJson = {
     //     "markdown": "[foo<http://example.com/?search=](uri)>",
     //     "html": "<p>[foo<a href=\"http://example.com/?search=%5D(uri)\">http://example.com/?search=](uri)</a></p>"
     // },
-    /*"536": {TODO link references
-        "markdown": "[foo][bar]\n\n[bar]: /url \"title\"",
-        "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>"
-    },
-    "537": {
-        "markdown": "[link [foo [bar]]][ref]\n\n[ref]: /uri",
-        "html": "<p><a href=\"/uri\">link [foo [bar]]</a></p>"
-    },
-    "538": {
-        "markdown": "[link \\[bar][ref]\n\n[ref]: /uri",
-        "html": "<p><a href=\"/uri\">link [bar</a></p>"
-    },
-    "539": {
-        "markdown": "[link *foo **bar** `#`*][ref]\n\n[ref]: /uri",
-        "html": "<p><a href=\"/uri\">link <em>foo <strong>bar</strong> <code>#</code></em></a></p>"
-    },
-    "540": {
-        "markdown": "[![moon](moon.jpg)][ref]\n\n[ref]: /uri",
-        "html": "<p><a href=\"/uri\"><img src=\"moon.jpg\" alt=\"moon\" /></a></p>"
-    },
-    "541": {
-        "markdown": "[foo [bar](/uri)][ref]\n\n[ref]: /uri",
-        "html": "<p>[foo <a href=\"/uri\">bar</a>]<a href=\"/uri\">ref</a></p>"
-    },
-    "542": {
-        "markdown": "[foo *bar [baz][ref]*][ref]\n\n[ref]: /uri",
-        "html": "<p>[foo <em>bar <a href=\"/uri\">baz</a></em>]<a href=\"/uri\">ref</a></p>"
-    },
-    "543": {
-        "markdown": "*[foo*][ref]\n\n[ref]: /uri",
-        "html": "<p>*<a href=\"/uri\">foo*</a></p>"
-    },
-    "544": {
-        "markdown": "[foo *bar][ref]*\n\n[ref]: /uri",
-        "html": "<p><a href=\"/uri\">foo *bar</a>*</p>"
-    },
-    "545": {
-        "markdown": "[foo <bar attr=\"][ref]\">\n\n[ref]: /uri",
-        "html": "<p>[foo <bar attr=\"][ref]\"></p>"
-    },
-    "546": {
-        "markdown": "[foo`][ref]`\n\n[ref]: /uri",
-        "html": "<p>[foo<code>][ref]</code></p>"
-    },
-    "547": {
-        "markdown": "[foo<http://example.com/?search=][ref]>\n\n[ref]: /uri",
-        "html": "<p>[foo<a href=\"http://example.com/?search=%5D%5Bref%5D\">http://example.com/?search=][ref]</a></p>"
-    },
-    "548": {
-        "markdown": "[foo][BaR]\n\n[bar]: /url \"title\"",
-        "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>"
-    },
-    "549": {
-        "markdown": "[ẞ]\n\n[SS]: /url",
-        "html": "<p><a href=\"/url\">ẞ</a></p>"
-    },
-    "550": {
-        "markdown": "[Foo\n  bar]: /url\n\n[Baz][Foo bar]",
-        "html": "<p><a href=\"/url\">Baz</a></p>"
-    },
-    "551": {
-        "markdown": "[foo] [bar]\n\n[bar]: /url \"title\"",
-        "html": "<p>[foo] <a href=\"/url\" title=\"title\">bar</a></p>"
-    },
+    // "536": {//TODO link references
+    //     "markdown": "[foo][bar]\n\n[bar]: /url \"title\"",
+    //     "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>"
+    // },
+    // "537": {
+    //     "markdown": "[link [foo [bar]]][ref]\n\n[ref]: /uri",
+    //     "html": "<p><a href=\"/uri\">link [foo [bar]]</a></p>"
+    // },
+    // "538": {
+    //     "markdown": "[link \\[bar][ref]\n\n[ref]: /uri",
+    //     "html": "<p><a href=\"/uri\">link [bar</a></p>"
+    // },
+    // "539": {
+    //     "markdown": "[link *foo **bar** `#`*][ref]\n\n[ref]: /uri",
+    //     "html": "<p><a href=\"/uri\">link <em>foo <strong>bar</strong> <code>#</code></em></a></p>"
+    // },
+    // "540": {
+    //     "markdown": "[![moon](moon.jpg)][ref]\n\n[ref]: /uri",
+    //     "html": "<p><a href=\"/uri\"><img src=\"moon.jpg\" alt=\"moon\" /></a></p>"
+    // },
+    // "541": {
+    //     "markdown": "[foo [bar](/uri)][ref]\n\n[ref]: /uri",
+    //     "html": "<p>[foo <a href=\"/uri\">bar</a>]<a href=\"/uri\">ref</a></p>"
+    // },
+    // "542": {
+    //     "markdown": "[foo *bar [baz][ref]*][ref]\n\n[ref]: /uri",
+    //     "html": "<p>[foo <em>bar <a href=\"/uri\">baz</a></em>]<a href=\"/uri\">ref</a></p>"
+    // },
+    // "543": {
+    //     "markdown": "*[foo*][ref]\n\n[ref]: /uri",
+    //     "html": "<p>*<a href=\"/uri\">foo*</a></p>"
+    // },
+    // "544": {
+    //     "markdown": "[foo *bar][ref]*\n\n[ref]: /uri",
+    //     "html": "<p><a href=\"/uri\">foo *bar</a>*</p>"
+    // },
+    // "545": {
+    //     "markdown": "[foo <bar attr=\"][ref]\">\n\n[ref]: /uri",
+    //     "html": "<p>[foo <bar attr=\"][ref]\"></p>"
+    // },
+    // "546": {
+    //     "markdown": "[foo`][ref]`\n\n[ref]: /uri",
+    //     "html": "<p>[foo<code>][ref]</code></p>"
+    // },
+    // "547": {
+    //     "markdown": "[foo<http://example.com/?search=][ref]>\n\n[ref]: /uri",
+    //     "html": "<p>[foo<a href=\"http://example.com/?search=%5D%5Bref%5D\">http://example.com/?search=][ref]</a></p>"
+    // },
+    // "548": {
+    //     "markdown": "[foo][BaR]\n\n[bar]: /url \"title\"",
+    //     "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>"
+    // },
+    // "549": {
+    //     "markdown": "[ẞ]\n\n[SS]: /url",
+    //     "html": "<p><a href=\"/url\">ẞ</a></p>"
+    // },
+    // "550": {
+    //     "markdown": "[Foo\n  bar]: /url\n\n[Baz][Foo bar]",
+    //     "html": "<p><a href=\"/url\">Baz</a></p>"
+    // },
+    // "551": {
+    //     "markdown": "[foo] [bar]\n\n[bar]: /url \"title\"",
+    //     "html": "<p>[foo] <a href=\"/url\" title=\"title\">bar</a></p>"
+    // },
     "552": {
         "markdown": "[foo]\n[bar]\n\n[bar]: /url \"title\"",
         "html": "<p>[foo]<a href=\"/url\" title=\"title\">bar</a></p>"
     },
-    "553": {
-        "markdown": "[foo]: /url1\n\n[foo]: /url2\n\n[bar][foo]",
-        "html": "<p><a href=\"/url1\">bar</a></p>"
-    },
-    "554": {
-        "markdown": "[bar][foo\\!]\n\n[foo!]: /url",
-        "html": "<p>[bar][foo!]</p>"
-    },
-    "555": {
-        "markdown": "[foo][ref[]\n\n[ref[]: /uri",
-        "html": "<p>[foo][ref[]</p><p>[ref[]: /uri</p>"
-    },
-    "556": {
-        "markdown": "[foo][ref[bar]]\n\n[ref[bar]]: /uri",
-        "html": "<p>[foo][ref[bar]]</p><p>[ref[bar]]: /uri</p>"
-    },
-    "557": {
-        "markdown": "[[[foo]]]\n\n[[[foo]]]: /url",
-        "html": "<p>[[[foo]]]</p><p>[[[foo]]]: /url</p>"
-    },
-    "558": {
-        "markdown": "[foo][ref\\[]\n\n[ref\\[]: /uri",
-        "html": "<p><a href=\"/uri\">foo</a></p>"
-    },
+    // "553": {//TODO
+    //     "markdown": "[foo]: /url1\n\n[foo]: /url2\n\n[bar][foo]",
+    //     "html": "<p><a href=\"/url1\">bar</a></p>"
+    // },
+    // "554": {
+    //     "markdown": "[bar][foo\\!]\n\n[foo!]: /url",
+    //     "html": "<p>[bar][foo!]</p>"
+    // },
+    // "555": {
+    //     "markdown": "[foo][ref[]\n\n[ref[]: /uri",
+    //     "html": "<p>[foo][ref[]</p><p>[ref[]: /uri</p>"
+    // },
+    // "556": {
+    //     "markdown": "[foo][ref[bar]]\n\n[ref[bar]]: /uri",
+    //     "html": "<p>[foo][ref[bar]]</p><p>[ref[bar]]: /uri</p>"
+    // },
+    // "557": {
+    //     "markdown": "[[[foo]]]\n\n[[[foo]]]: /url",
+    //     "html": "<p>[[[foo]]]</p><p>[[[foo]]]: /url</p>"
+    // },
+    // "558": {
+    //     "markdown": "[foo][ref\\[]\n\n[ref\\[]: /uri",
+    //     "html": "<p><a href=\"/uri\">foo</a></p>"
+    // },
     "559": {
         "markdown": "[bar\\\\]: /uri\n\n[bar\\\\]",
         "html": "<p><a href=\"/uri\">bar\\</a></p>"
@@ -2296,18 +2288,18 @@ var commonmarkJson = {
         "markdown": "[\n ]\n\n[\n ]: /uri",
         "html": "<p>[\n]</p><p>[\n]: /uri</p>"
     },
-    "562": {
-        "markdown": "[foo][]\n\n[foo]: /url \"title\"",
-        "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>"
-    },
-    "563": {
-        "markdown": "[*foo* bar][]\n\n[*foo* bar]: /url \"title\"",
-        "html": "<p><a href=\"/url\" title=\"title\"><em>foo</em> bar</a></p>"
-    },
-    "564": {
-        "markdown": "[Foo][]\n\n[foo]: /url \"title\"",
-        "html": "<p><a href=\"/url\" title=\"title\">Foo</a></p>"
-    },
+    // "562": {//TODO
+    //     "markdown": "[foo][]\n\n[foo]: /url \"title\"",
+    //     "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>"
+    // },
+    // "563": {
+    //     "markdown": "[*foo* bar][]\n\n[*foo* bar]: /url \"title\"",
+    //     "html": "<p><a href=\"/url\" title=\"title\"><em>foo</em> bar</a></p>"
+    // },
+    // "564": {
+    //     "markdown": "[Foo][]\n\n[foo]: /url \"title\"",
+    //     "html": "<p><a href=\"/url\" title=\"title\">Foo</a></p>"
+    // },
     "565": {
         "markdown": "[foo] \n[]\n\n[foo]: /url \"title\"",
         "html": "<p><a href=\"/url\" title=\"title\">foo</a>\n[]</p>"
@@ -2320,14 +2312,14 @@ var commonmarkJson = {
         "markdown": "[*foo* bar]\n\n[*foo* bar]: /url \"title\"",
         "html": "<p><a href=\"/url\" title=\"title\"><em>foo</em> bar</a></p>"
     },
-    "568": {
-        "markdown": "[[*foo* bar]]\n\n[*foo* bar]: /url \"title\"",
-        "html": "<p>[<a href=\"/url\" title=\"title\"><em>foo</em> bar</a>]</p>"
-    },
-    "569": {
-        "markdown": "[[bar [foo]\n\n[foo]: /url",
-        "html": "<p>[[bar <a href=\"/url\">foo</a></p>"
-    },
+    // "568": {//TODO
+    //     "markdown": "[[*foo* bar]]\n\n[*foo* bar]: /url \"title\"",
+    //     "html": "<p>[<a href=\"/url\" title=\"title\"><em>foo</em> bar</a>]</p>"
+    // },
+    // "569": {
+    //     "markdown": "[[bar [foo]\n\n[foo]: /url",
+    //     "html": "<p>[[bar <a href=\"/url\">foo</a></p>"
+    // },
     "570": {
         "markdown": "[Foo]\n\n[foo]: /url \"title\"",
         "html": "<p><a href=\"/url\" title=\"title\">Foo</a></p>"
@@ -2340,114 +2332,114 @@ var commonmarkJson = {
         "markdown": "\\[foo]\n\n[foo]: /url \"title\"",
         "html": "<p>[foo]</p>"
     },
-    "573": {
-        "markdown": "[foo*]: /url\n\n*[foo*]",
-        "html": "<p>*<a href=\"/url\">foo*</a></p>"
-    },
-    "574": {
-        "markdown": "[foo][bar]\n\n[foo]: /url1\n[bar]: /url2",
-        "html": "<p><a href=\"/url2\">foo</a></p>"
-    },
-    "575": {
-        "markdown": "[foo][]\n\n[foo]: /url1",
-        "html": "<p><a href=\"/url1\">foo</a></p>"
-    },
+    // "573": {//TODO
+    //     "markdown": "[foo*]: /url\n\n*[foo*]",
+    //     "html": "<p>*<a href=\"/url\">foo*</a></p>"
+    // },
+    // "574": {
+    //     "markdown": "[foo][bar]\n\n[foo]: /url1\n[bar]: /url2",
+    //     "html": "<p><a href=\"/url2\">foo</a></p>"
+    // },
+    // "575": {
+    //     "markdown": "[foo][]\n\n[foo]: /url1",
+    //     "html": "<p><a href=\"/url1\">foo</a></p>"
+    // },
     "576": {
         "markdown": "[foo]()\n\n[foo]: /url1",
         "html": "<p><a href=\"\">foo</a></p>"
     },
-    "577": {
-        "markdown": "[foo](not a link)\n\n[foo]: /url1",
-        "html": "<p><a href=\"/url1\">foo</a>(not a link)</p>"
-    },
-    "578": {
-        "markdown": "[foo][bar][baz]\n\n[baz]: /url",
-        "html": "<p>[foo]<a href=\"/url\">bar</a></p>"
-    },
-    "579": {
-        "markdown": "[foo][bar][baz]\n\n[baz]: /url1\n[bar]: /url2",
-        "html": "<p><a href=\"/url2\">foo</a><a href=\"/url1\">baz</a></p>"
-    },
-    "580": {
-        "markdown": "[foo][bar][baz]\n\n[baz]: /url1\n[foo]: /url2",
-        "html": "<p>[foo]<a href=\"/url1\">bar</a></p>"
-    },
+    // "577": {//TODO
+    //     "markdown": "[foo](not a link)\n\n[foo]: /url1",
+    //     "html": "<p><a href=\"/url1\">foo</a>(not a link)</p>"
+    // },
+    // "578": {
+    //     "markdown": "[foo][bar][baz]\n\n[baz]: /url",
+    //     "html": "<p>[foo]<a href=\"/url\">bar</a></p>"
+    // },
+    // "579": {
+    //     "markdown": "[foo][bar][baz]\n\n[baz]: /url1\n[bar]: /url2",
+    //     "html": "<p><a href=\"/url2\">foo</a><a href=\"/url1\">baz</a></p>"
+    // },
+    // "580": {
+    //     "markdown": "[foo][bar][baz]\n\n[baz]: /url1\n[foo]: /url2",
+    //     "html": "<p>[foo]<a href=\"/url1\">bar</a></p>"
+    // },
     "581": {
         "markdown": "![foo](/url \"title\")",
         "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" /></p>"
     },
-    "582": {
-        "markdown": "![foo *bar*]\n\n[foo *bar*]: train.jpg \"train & tracks\"",
-        "html": "<p><img src=\"train.jpg\" alt=\"foo bar\" title=\"train &amp; tracks\" /></p>"
-    },
-    "583": {
-        "markdown": "![foo ![bar](/url)](/url2)",
-        "html": "<p><img src=\"/url2\" alt=\"foo bar\" /></p>"
-    },
-    "584": {
-        "markdown": "![foo [bar](/url)](/url2)",
-        "html": "<p><img src=\"/url2\" alt=\"foo bar\" /></p>"
-    },
-    "585": {
-        "markdown": "![foo *bar*][]\n\n[foo *bar*]: train.jpg \"train & tracks\"",
-        "html": "<p><img src=\"train.jpg\" alt=\"foo bar\" title=\"train &amp; tracks\" /></p>"
-    },
-    "586": {
-        "markdown": "![foo *bar*][foobar]\n\n[FOOBAR]: train.jpg \"train & tracks\"",
-        "html": "<p><img src=\"train.jpg\" alt=\"foo bar\" title=\"train &amp; tracks\" /></p>"
-    },
+    // "582": {//TODO
+    //     "markdown": "![foo *bar*]\n\n[foo *bar*]: train.jpg \"train & tracks\"",
+    //     "html": "<p><img src=\"train.jpg\" alt=\"foo bar\" title=\"train &amp; tracks\" /></p>"
+    // },
+    // "583": {
+    //     "markdown": "![foo ![bar](/url)](/url2)",
+    //     "html": "<p><img src=\"/url2\" alt=\"foo bar\" /></p>"
+    // },
+    // "584": {
+    //     "markdown": "![foo [bar](/url)](/url2)",
+    //     "html": "<p><img src=\"/url2\" alt=\"foo bar\" /></p>"
+    // },
+    // "585": {
+    //     "markdown": "![foo *bar*][]\n\n[foo *bar*]: train.jpg \"train & tracks\"",
+    //     "html": "<p><img src=\"train.jpg\" alt=\"foo bar\" title=\"train &amp; tracks\" /></p>"
+    // },
+    // "586": {
+    //     "markdown": "![foo *bar*][foobar]\n\n[FOOBAR]: train.jpg \"train & tracks\"",
+    //     "html": "<p><img src=\"train.jpg\" alt=\"foo bar\" title=\"train &amp; tracks\" /></p>"
+    // },
     "587": {
         "markdown": "![foo](train.jpg)",
         "html": "<p><img src=\"train.jpg\" alt=\"foo\" /></p>"
     },
-    "588": {
-        "markdown": "My ![foo bar](/path/to/train.jpg  \"title\"   )",
-        "html": "<p>My <img src=\"/path/to/train.jpg\" alt=\"foo bar\" title=\"title\" /></p>"
-    },
+    // "588": {//TODO
+    //     "markdown": "My ![foo bar](/path/to/train.jpg  \"title\"   )",
+    //     "html": "<p>My <img src=\"/path/to/train.jpg\" alt=\"foo bar\" title=\"title\" /></p>"
+    // },
     "589": {
         "markdown": "![foo](<url>)",
         "html": "<p><img src=\"url\" alt=\"foo\" /></p>"
     },
-    "590": {
-        "markdown": "![](/url)",
-        "html": "<p><img src=\"/url\" alt=\"\" /></p>"
-    },
-    "591": {
-        "markdown": "![foo][bar]\n\n[bar]: /url",
-        "html": "<p><img src=\"/url\" alt=\"foo\" /></p>"
-    },
-    "592": {
-        "markdown": "![foo][bar]\n\n[BAR]: /url",
-        "html": "<p><img src=\"/url\" alt=\"foo\" /></p>"
-    },
-    "593": {
-        "markdown": "![foo][]\n\n[foo]: /url \"title\"",
-        "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" /></p>"
-    },
-    "594": {
-        "markdown": "![*foo* bar][]\n\n[*foo* bar]: /url \"title\"",
-        "html": "<p><img src=\"/url\" alt=\"foo bar\" title=\"title\" /></p>"
-    },
-    "595": {
-        "markdown": "![Foo][]\n\n[foo]: /url \"title\"",
-        "html": "<p><img src=\"/url\" alt=\"Foo\" title=\"title\" /></p>"
-    },
-    "596": {
-        "markdown": "![foo] \n[]\n\n[foo]: /url \"title\"",
-        "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" />\n[]</p>"
-    },
+    // "590": {//TODO
+    //     "markdown": "![](/url)",
+    //     "html": "<p><img src=\"/url\" alt=\"\" /></p>"
+    // },
+    // "591": {
+    //     "markdown": "![foo][bar]\n\n[bar]: /url",
+    //     "html": "<p><img src=\"/url\" alt=\"foo\" /></p>"
+    // },
+    // "592": {
+    //     "markdown": "![foo][bar]\n\n[BAR]: /url",
+    //     "html": "<p><img src=\"/url\" alt=\"foo\" /></p>"
+    // },
+    // "593": {
+    //     "markdown": "![foo][]\n\n[foo]: /url \"title\"",
+    //     "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" /></p>"
+    // },
+    // "594": {
+    //     "markdown": "![*foo* bar][]\n\n[*foo* bar]: /url \"title\"",
+    //     "html": "<p><img src=\"/url\" alt=\"foo bar\" title=\"title\" /></p>"
+    // },
+    // "595": {
+    //     "markdown": "![Foo][]\n\n[foo]: /url \"title\"",
+    //     "html": "<p><img src=\"/url\" alt=\"Foo\" title=\"title\" /></p>"
+    // },
+    // "596": {
+    //     "markdown": "![foo] \n[]\n\n[foo]: /url \"title\"",
+    //     "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" />\n[]</p>"
+    // },
     "597": {
         "markdown": "![foo]\n\n[foo]: /url \"title\"",
         "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" /></p>"
     },
-    "598": {
-        "markdown": "![*foo* bar]\n\n[*foo* bar]: /url \"title\"",
-        "html": "<p><img src=\"/url\" alt=\"foo bar\" title=\"title\" /></p>"
-    },
-    "599": {
-        "markdown": "![[foo]]\n\n[[foo]]: /url \"title\"",
-        "html": "<p>![[foo]]</p><p>[[foo]]: /url &quot;title&quot;</p>"
-    },
+    // "598": {//TODO
+    //     "markdown": "![*foo* bar]\n\n[*foo* bar]: /url \"title\"",
+    //     "html": "<p><img src=\"/url\" alt=\"foo bar\" title=\"title\" /></p>"
+    // },
+    // "599": {
+    //     "markdown": "![[foo]]\n\n[[foo]]: /url \"title\"",
+    //     "html": "<p>![[foo]]</p><p>[[foo]]: /url &quot;title&quot;</p>"
+    // },
     "600": {
         "markdown": "![Foo]\n\n[foo]: /url \"title\"",
         "html": "<p><img src=\"/url\" alt=\"Foo\" title=\"title\" /></p>"
@@ -2459,7 +2451,7 @@ var commonmarkJson = {
     "602": {
         "markdown": "\\![foo]\n\n[foo]: /url \"title\"",
         "html": "<p>!<a href=\"/url\" title=\"title\">foo</a></p>"
-    },*/
+    },
     "603": {
         "markdown": "<http://foo.bar.baz>",
         "html": "<p><a href=\"http://foo.bar.baz\">http://foo.bar.baz</a></p>"
@@ -2496,10 +2488,10 @@ var commonmarkJson = {
     //     "markdown": "<http://foo.bar/baz bim>",
     //     "html": "<p>&lt;http://foo.bar/baz bim&gt;</p>"
     // },
-    // "612": {//TODO html escapes
-    //     "markdown": "<http://example.com/\\[\\>",
-    //     "html": "<p><a href=\"http://example.com/%5C%5B%5C\">http://example.com/\\[\\</a></p>"
-    // },
+    "612": {
+        "markdown": "<http://example.com/\\[\\>",
+        "html": "<p><a href=\"http://example.com/%5C%5B%5C\">http://example.com/\\[\\</a></p>"
+    },
     "613": {
         "markdown": "<foo@bar.example.com>",
         "html": "<p><a href=\"mailto:foo@bar.example.com\">foo@bar.example.com</a></p>"
@@ -2536,150 +2528,150 @@ var commonmarkJson = {
     //     "markdown": "foo@bar.example.com",
     //     "html": "<p>foo@bar.example.com</p>"
     // },
-    /*"622": {//TODO autolinks extension
-        "markdown": "www.commonmark.org",
-        "html": "<p><a href=\"http://www.commonmark.org\">www.commonmark.org</a></p>"
-    },
-    "623": {
-        "markdown": "Visit www.commonmark.org/help for more information.",
-        "html": "<p>Visit <a href=\"http://www.commonmark.org/help\">www.commonmark.org/help</a> for more information.</p>"
-    },
-    "624": {
-        "markdown": "Visit www.commonmark.org.\n\nVisit www.commonmark.org/a.b.",
-        "html": "<p>Visit <a href=\"http://www.commonmark.org\">www.commonmark.org</a>.</p><p>Visit <a href=\"http://www.commonmark.org/a.b\">www.commonmark.org/a.b</a>.</p>"
-    },
-    "625": {
-        "markdown": "www.google.com/search?q=Markup+(business)\n\nwww.google.com/search?q=Markup+(business)))\n\n(www.google.com/search?q=Markup+(business))\n\n(www.google.com/search?q=Markup+(business)",
-        "html": "<p><a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a></p><p><a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a>))</p><p>(<a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a>)</p><p>(<a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a></p>"
-    },
-    "626": {
-        "markdown": "www.google.com/search?q=(business))+ok",
-        "html": "<p><a href=\"http://www.google.com/search?q=(business))+ok\">www.google.com/search?q=(business))+ok</a></p>"
-    },
-    "627": {
-        "markdown": "www.google.com/search?q=commonmark&hl=en\n\nwww.google.com/search?q=commonmark&hl;",
-        "html": "<p><a href=\"http://www.google.com/search?q=commonmark&amp;hl=en\">www.google.com/search?q=commonmark&amp;hl=en</a></p><p><a href=\"http://www.google.com/search?q=commonmark\">www.google.com/search?q=commonmark</a>&amp;hl;</p>"
-    },
-    "628": {
-        "markdown": "www.commonmark.org/he<lp",
-        "html": "<p><a href=\"http://www.commonmark.org/he\">www.commonmark.org/he</a>&lt;lp</p>"
-    },
-    "629": {
-        "markdown": "http://commonmark.org\n\n(Visit https://encrypted.google.com/search?q=Markup+(business))",
-        "html": "<p><a href=\"http://commonmark.org\">http://commonmark.org</a></p><p>(Visit <a href=\"https://encrypted.google.com/search?q=Markup+(business)\">https://encrypted.google.com/search?q=Markup+(business)</a>)</p>"
-    },
-    "630": {
-        "markdown": "foo@bar.baz",
-        "html": "<p><a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>"
-    },
-    "631": {
-        "markdown": "hello@mail+xyz.example isn't valid, but hello+xyz@mail.example is.",
-        "html": "<p>hello@mail+xyz.example isn't valid, but <a href=\"mailto:hello+xyz@mail.example\">hello+xyz@mail.example</a> is.</p>"
-    },
-    "632": {
-        "markdown": "a.b-c_d@a.b\n\na.b-c_d@a.b.\n\na.b-c_d@a.b-\n\na.b-c_d@a.b_",
-        "html": "<p><a href=\"mailto:a.b-c_d@a.b\">a.b-c_d@a.b</a></p><p><a href=\"mailto:a.b-c_d@a.b\">a.b-c_d@a.b</a>.</p><p>a.b-c_d@a.b-</p><p>a.b-c_d@a.b_</p>"
-    },
-    "633": {
-        "markdown": "mailto:foo@bar.baz\n\nmailto:a.b-c_d@a.b\n\nmailto:a.b-c_d@a.b.\n\nmailto:a.b-c_d@a.b/\n\nmailto:a.b-c_d@a.b-\n\nmailto:a.b-c_d@a.b_\n\nxmpp:foo@bar.baz\n\nxmpp:foo@bar.baz.",
-        "html": "<p><a href=\"mailto:foo@bar.baz\">mailto:foo@bar.baz</a></p><p><a href=\"mailto:a.b-c_d@a.b\">mailto:a.b-c_d@a.b</a></p><p><a href=\"mailto:a.b-c_d@a.b\">mailto:a.b-c_d@a.b</a>.</p><p><a href=\"mailto:a.b-c_d@a.b\">mailto:a.b-c_d@a.b</a>/</p><p>mailto:a.b-c_d@a.b-</p><p>mailto:a.b-c_d@a.b_</p><p><a href=\"xmpp:foo@bar.baz\">xmpp:foo@bar.baz</a></p><p><a href=\"xmpp:foo@bar.baz\">xmpp:foo@bar.baz</a>.</p>"
-    },
-    "634": {
-        "markdown": "xmpp:foo@bar.baz/txt\n\nxmpp:foo@bar.baz/txt@bin\n\nxmpp:foo@bar.baz/txt@bin.com",
-        "html": "<p><a href=\"xmpp:foo@bar.baz/txt\">xmpp:foo@bar.baz/txt</a></p><p><a href=\"xmpp:foo@bar.baz/txt@bin\">xmpp:foo@bar.baz/txt@bin</a></p><p><a href=\"xmpp:foo@bar.baz/txt@bin.com\">xmpp:foo@bar.baz/txt@bin.com</a></p>"
-    },
-    "635": {
-        "markdown": "xmpp:foo@bar.baz/txt/bin",
-        "html": "<p><a href=\"xmpp:foo@bar.baz/txt\">xmpp:foo@bar.baz/txt</a>/bin</p>"
-    },*/
-    /*"636": {//TODO raw html
-        "markdown": "<a><bab><c2c>",
-        "html": "<p><a><bab><c2c></p>"
-    },
-    "637": {
-        "markdown": "<a/><b2/>",
-        "html": "<p><a/><b2/></p>"
-    },
-    "638": {
-        "markdown": "<a  /><b2\ndata=\"foo\" >",
-        "html": "<p><a  /><b2\ndata=\"foo\" ></p>"
-    },
-    "639": {
-        "markdown": "<a foo=\"bar\" bam = 'baz <em>\"</em>'\n_boolean zoop:33=zoop:33 />",
-        "html": "<p><a foo=\"bar\" bam = 'baz <em>\"</em>'\n_boolean zoop:33=zoop:33 /></p>"
-    },
+    // "622": {//TODO autolinks extension
+    //     "markdown": "www.commonmark.org",
+    //     "html": "<p><a href=\"http://www.commonmark.org\">www.commonmark.org</a></p>"
+    // },
+    // "623": {
+    //     "markdown": "Visit www.commonmark.org/help for more information.",
+    //     "html": "<p>Visit <a href=\"http://www.commonmark.org/help\">www.commonmark.org/help</a> for more information.</p>"
+    // },
+    // "624": {
+    //     "markdown": "Visit www.commonmark.org.\n\nVisit www.commonmark.org/a.b.",
+    //     "html": "<p>Visit <a href=\"http://www.commonmark.org\">www.commonmark.org</a>.</p><p>Visit <a href=\"http://www.commonmark.org/a.b\">www.commonmark.org/a.b</a>.</p>"
+    // },
+    // "625": {
+    //     "markdown": "www.google.com/search?q=Markup+(business)\n\nwww.google.com/search?q=Markup+(business)))\n\n(www.google.com/search?q=Markup+(business))\n\n(www.google.com/search?q=Markup+(business)",
+    //     "html": "<p><a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a></p><p><a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a>))</p><p>(<a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a>)</p><p>(<a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a></p>"
+    // },
+    // "626": {
+    //     "markdown": "www.google.com/search?q=(business))+ok",
+    //     "html": "<p><a href=\"http://www.google.com/search?q=(business))+ok\">www.google.com/search?q=(business))+ok</a></p>"
+    // },
+    // "627": {
+    //     "markdown": "www.google.com/search?q=commonmark&hl=en\n\nwww.google.com/search?q=commonmark&hl;",
+    //     "html": "<p><a href=\"http://www.google.com/search?q=commonmark&amp;hl=en\">www.google.com/search?q=commonmark&amp;hl=en</a></p><p><a href=\"http://www.google.com/search?q=commonmark\">www.google.com/search?q=commonmark</a>&amp;hl;</p>"
+    // },
+    // "628": {
+    //     "markdown": "www.commonmark.org/he<lp",
+    //     "html": "<p><a href=\"http://www.commonmark.org/he\">www.commonmark.org/he</a>&lt;lp</p>"
+    // },
+    // "629": {
+    //     "markdown": "http://commonmark.org\n\n(Visit https://encrypted.google.com/search?q=Markup+(business))",
+    //     "html": "<p><a href=\"http://commonmark.org\">http://commonmark.org</a></p><p>(Visit <a href=\"https://encrypted.google.com/search?q=Markup+(business)\">https://encrypted.google.com/search?q=Markup+(business)</a>)</p>"
+    // },
+    // "630": {
+    //     "markdown": "foo@bar.baz",
+    //     "html": "<p><a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>"
+    // },
+    // "631": {
+    //     "markdown": "hello@mail+xyz.example isn't valid, but hello+xyz@mail.example is.",
+    //     "html": "<p>hello@mail+xyz.example isn't valid, but <a href=\"mailto:hello+xyz@mail.example\">hello+xyz@mail.example</a> is.</p>"
+    // },
+    // "632": {
+    //     "markdown": "a.b-c_d@a.b\n\na.b-c_d@a.b.\n\na.b-c_d@a.b-\n\na.b-c_d@a.b_",
+    //     "html": "<p><a href=\"mailto:a.b-c_d@a.b\">a.b-c_d@a.b</a></p><p><a href=\"mailto:a.b-c_d@a.b\">a.b-c_d@a.b</a>.</p><p>a.b-c_d@a.b-</p><p>a.b-c_d@a.b_</p>"
+    // },
+    // "633": {
+    //     "markdown": "mailto:foo@bar.baz\n\nmailto:a.b-c_d@a.b\n\nmailto:a.b-c_d@a.b.\n\nmailto:a.b-c_d@a.b/\n\nmailto:a.b-c_d@a.b-\n\nmailto:a.b-c_d@a.b_\n\nxmpp:foo@bar.baz\n\nxmpp:foo@bar.baz.",
+    //     "html": "<p><a href=\"mailto:foo@bar.baz\">mailto:foo@bar.baz</a></p><p><a href=\"mailto:a.b-c_d@a.b\">mailto:a.b-c_d@a.b</a></p><p><a href=\"mailto:a.b-c_d@a.b\">mailto:a.b-c_d@a.b</a>.</p><p><a href=\"mailto:a.b-c_d@a.b\">mailto:a.b-c_d@a.b</a>/</p><p>mailto:a.b-c_d@a.b-</p><p>mailto:a.b-c_d@a.b_</p><p><a href=\"xmpp:foo@bar.baz\">xmpp:foo@bar.baz</a></p><p><a href=\"xmpp:foo@bar.baz\">xmpp:foo@bar.baz</a>.</p>"
+    // },
+    // "634": {
+    //     "markdown": "xmpp:foo@bar.baz/txt\n\nxmpp:foo@bar.baz/txt@bin\n\nxmpp:foo@bar.baz/txt@bin.com",
+    //     "html": "<p><a href=\"xmpp:foo@bar.baz/txt\">xmpp:foo@bar.baz/txt</a></p><p><a href=\"xmpp:foo@bar.baz/txt@bin\">xmpp:foo@bar.baz/txt@bin</a></p><p><a href=\"xmpp:foo@bar.baz/txt@bin.com\">xmpp:foo@bar.baz/txt@bin.com</a></p>"
+    // },
+    // "635": {
+    //     "markdown": "xmpp:foo@bar.baz/txt/bin",
+    //     "html": "<p><a href=\"xmpp:foo@bar.baz/txt\">xmpp:foo@bar.baz/txt</a>/bin</p>"
+    // },
+    // "636": {//TODO raw html
+    //     "markdown": "<a><bab><c2c>",
+    //     "html": "<p><a><bab><c2c></p>"
+    // },
+    // "637": {
+    //     "markdown": "<a/><b2/>",
+    //     "html": "<p><a/><b2/></p>"
+    // },
+    // "638": {
+    //     "markdown": "<a  /><b2\ndata=\"foo\" >",
+    //     "html": "<p><a  /><b2\ndata=\"foo\" ></p>"
+    // },
+    // "639": {
+    //     "markdown": "<a foo=\"bar\" bam = 'baz <em>\"</em>'\n_boolean zoop:33=zoop:33 />",
+    //     "html": "<p><a foo=\"bar\" bam = 'baz <em>\"</em>'\n_boolean zoop:33=zoop:33 /></p>"
+    // },
     "640": {
         "markdown": "Foo <responsive-image src=\"foo.jpg\" />",
         "html": "<p>Foo <responsive-image src=\"foo.jpg\" /></p>"
     },
-    "641": {
-        "markdown": "<33> <__>",
-        "html": "<p>&lt;33&gt; &lt;__&gt;</p>"
-    },
-    "642": {
-        "markdown": "<a h*#ref=\"hi\">",
-        "html": "<p>&lt;a h*#ref=&quot;hi&quot;&gt;</p>"
-    },
-    "643": {
-        "markdown": "<a href=\"hi'> <a href=hi'>",
-        "html": "<p>&lt;a href=&quot;hi'&gt; &lt;a href=hi'&gt;</p>"
-    },
-    "644": {
-        "markdown": "< a><\nfoo><bar/ ><foo bar=baz\nbim!bop />",
-        "html": "<p>&lt; a&gt;&lt;\nfoo&gt;&lt;bar/ &gt;\n&lt;foo bar=baz\nbim!bop /&gt;</p>"
-    },
-    "645": {
-        "markdown": "<a href='bar'title=title>",
-        "html": "<p>&lt;a href='bar'title=title&gt;</p>"
-    },
-    "646": {
-        "markdown": "</a></foo >",
-        "html": "<p></a></foo ></p>"
-    },
-    "647": {
-        "markdown": "</a href=\"foo\">",
-        "html": "<p>&lt;/a href=&quot;foo&quot;&gt;</p>"
-    },
-    "648": {
-        "markdown": "foo <!-- this is a\ncomment - with hyphen -->",
-        "html": "<p>foo <!-- this is a\ncomment - with hyphen --></p>"
-    },
-    "649": {
-        "markdown": "foo <!-- not a comment -- two hyphens -->",
-        "html": "<p>foo &lt;!-- not a comment -- two hyphens --&gt;</p>"
-    },
-    "650": {
-        "markdown": "foo <!--> foo -->\n\nfoo <!-- foo--->",
-        "html": "<p>foo &lt;!--&gt; foo --&gt;</p><p>foo &lt;!-- foo---&gt;</p>"
-    },
+    // "641": {//TODO
+    //     "markdown": "<33> <__>",
+    //     "html": "<p>&lt;33&gt; &lt;__&gt;</p>"
+    // },
+    // "642": {
+    //     "markdown": "<a h*#ref=\"hi\">",
+    //     "html": "<p>&lt;a h*#ref=&quot;hi&quot;&gt;</p>"
+    // },
+    // "643": {
+    //     "markdown": "<a href=\"hi'> <a href=hi'>",
+    //     "html": "<p>&lt;a href=&quot;hi'&gt; &lt;a href=hi'&gt;</p>"
+    // },
+    // "644": {
+    //     "markdown": "< a><\nfoo><bar/ ><foo bar=baz\nbim!bop />",
+    //     "html": "<p>&lt; a&gt;&lt;\nfoo&gt;&lt;bar/ &gt;\n&lt;foo bar=baz\nbim!bop /&gt;</p>"
+    // },
+    // "645": {
+    //     "markdown": "<a href='bar'title=title>",
+    //     "html": "<p>&lt;a href='bar'title=title&gt;</p>"
+    // },
+    // "646": {
+    //     "markdown": "</a></foo >",
+    //     "html": "<p></a></foo ></p>"
+    // },
+    // "647": {
+    //     "markdown": "</a href=\"foo\">",
+    //     "html": "<p>&lt;/a href=&quot;foo&quot;&gt;</p>"
+    // },
+    // "648": {
+    //     "markdown": "foo <!-- this is a\ncomment - with hyphen -->",
+    //     "html": "<p>foo <!-- this is a\ncomment - with hyphen --></p>"
+    // },
+    // "649": {
+    //     "markdown": "foo <!-- not a comment -- two hyphens -->",
+    //     "html": "<p>foo &lt;!-- not a comment -- two hyphens --&gt;</p>"
+    // },
+    // "650": {
+    //     "markdown": "foo <!--> foo -->\n\nfoo <!-- foo--->",
+    //     "html": "<p>foo &lt;!--&gt; foo --&gt;</p><p>foo &lt;!-- foo---&gt;</p>"
+    // },
     "651": {
         "markdown": "foo <?php echo $a; ?>",
         "html": "<p>foo <?php echo $a; ?></p>"
     },
-    "652": {
-        "markdown": "foo <!ELEMENT br EMPTY>",
-        "html": "<p>foo <!ELEMENT br EMPTY></p>"
-    },
-    "653": {
-        "markdown": "foo <![CDATA[>&<]]>",
-        "html": "<p>foo <![CDATA[>&<]]></p>"
-    },
-    "654": {
-        "markdown": "foo <a href=\"&ouml;\">",
-        "html": "<p>foo <a href=\"&ouml;\"></p>"
-    },
+    // "652": {//TODO
+    //     "markdown": "foo <!ELEMENT br EMPTY>",
+    //     "html": "<p>foo <!ELEMENT br EMPTY></p>"
+    // },
+    // "653": {
+    //     "markdown": "foo <![CDATA[>&<]]>",
+    //     "html": "<p>foo <![CDATA[>&<]]></p>"
+    // },
+    // "654": {
+    //     "markdown": "foo <a href=\"&ouml;\">",
+    //     "html": "<p>foo <a href=\"&ouml;\"></p>"
+    // },
     "655": {
         "markdown": "foo <a href=\"\\*\">",
         "html": "<p>foo <a href=\"\\*\"></p>"
     },
-    "656": {
-        "markdown": "<a href=\"\\\"\">",
-        "html": "<p>&lt;a href=&quot;&quot;&quot;&gt;</p>"
-    },
-    "657": {
-        "markdown": "<strong> <title> <style> <em>\n<blockquote>\n  <xmp> is disallowed.  <XMP> is also disallowed.</blockquote>",
-        "html": "<p><strong> &lt;title> &lt;style> <em></p><blockquote>\n  &lt;xmp> is disallowed.  &lt;XMP> is also disallowed.</blockquote>"
-    },*/
+    // "656": {//TODO
+    //     "markdown": "<a href=\"\\\"\">",
+    //     "html": "<p>&lt;a href=&quot;&quot;&quot;&gt;</p>"
+    // },
+    // "657": {
+    //     "markdown": "<strong> <title> <style> <em>\n<blockquote>\n  <xmp> is disallowed.  <XMP> is also disallowed.</blockquote>",
+    //     "html": "<p><strong> &lt;title> &lt;style> <em></p><blockquote>\n  &lt;xmp> is disallowed.  &lt;XMP> is also disallowed.</blockquote>"
+    // },
     "658": {
         "markdown": "foo  \nbaz",
         "html": "<p>foo<br />\nbaz</p>"

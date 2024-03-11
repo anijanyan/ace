@@ -943,10 +943,26 @@ function parseMarkdown(string) {
 }
 
 function renderMarkdown(string, parentHtml) {
-    let parsedTokens = parseMarkdown(string);
+    var parsedTokens = parseMarkdown(string);
+    var entityRegexp;
+    var entityElement;
 
     function getLinkLabel(token) {
         return JSON.stringify(token.children.map(child => (typeof child === "string") ? child.toLowerCase() : ""));//TODO circular
+    }
+
+    function getEntityValue(value) {
+        entityRegexp ||= /&(\w+|#[0-9]+);/g;
+        if (!entityRegexp.test(value))
+            return value;
+        var parts = value.match(entityRegexp);
+        parts.forEach((part) => {
+            entityElement ||= document.createElement("textarea");
+            entityElement.innerHTML = part;
+            if (entityElement.innerHTML)
+                value = value.replace(part, entityElement.innerHTML);
+        });
+        return value;
     }
 
     function renderTokens(tokens, parentHtml) {
@@ -954,7 +970,7 @@ function renderMarkdown(string, parentHtml) {
         for (let i = 0; i < l; i++) {
             let token = tokens[i];
             if (typeof token == "string") {
-                dom.buildDom(token, parentHtml);
+                dom.buildDom(getEntityValue(token), parentHtml);
             } else {
                 if (token.isReference)
                     continue;
