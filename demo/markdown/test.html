@@ -18,14 +18,18 @@
             height: 800px;
             width: 49%
         }
+
+        #markdown-result {
+            height: 800px;
+            width: 49%;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
 <div style="display: flex; gap: 10px">
-    <div id="editor">```
-
-
-```</div>
+    <div id="editor">  aaa
+        bbb</div>
     <div id="markdown-result"></div>
 </div>
 
@@ -40,16 +44,14 @@
     // setup paths
     require.config({paths: { "ace" : "../../src"}});
     // load ace and extensions
-    require(["ace/ace", "ace/mode/markdown", "markdown_parser"], function(ace, codeLens) {
+    require(["ace/ace", "ace/mode/markdown", "markdown_renderer", "markdown_parser"], function(ace, codeLens) {
+        var markdownResult = document.getElementById("markdown-result");
         var editor = ace.edit("editor");
-        var renderMarkdown = require("markdown_parser").renderMarkdown;
-        editor.session.setMode("ace/mode/markdown");
 
-        var parentHtml = document.getElementById("markdown-result");
-
-        editor.on("input", () => renderMarkdown(editor.getValue(), parentHtml));
-        window.editor = editor;
-        renderMarkdown(editor.getValue(), parentHtml);
+        var MarkdownRenderer = require("markdown_renderer").MarkdownRenderer;
+        var markdownRenderer = new MarkdownRenderer(markdownResult);
+        markdownRenderer.setEditor(editor);
+        markdownRenderer.renderEditorValue();
     });
 </script>
 <!--DEVEL-->

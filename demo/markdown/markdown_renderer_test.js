@@ -9,7 +9,7 @@ if (typeof process !== "undefined") {
 
 var dom = require(src + "/lib/dom");
 var assert = require(src + "/test/assertions");
-var renderMarkdown = require("./markdown_parser").renderMarkdown;
+var MarkdownRenderer = require("./markdown_renderer").MarkdownRenderer;
 
 var commonmarkJson = {
     "1": {
@@ -2757,6 +2757,9 @@ var commonmarkJson = {
 var startFrom = 0;
 var upTo = Infinity;
 
+var resultHtml = dom.buildDom(["div"]);
+var markdownRenderer = new MarkdownRenderer(resultHtml);
+
 module.exports = Object.fromEntries(Object.entries(commonmarkJson).map(([index, json]) => {
     if (index < startFrom || index > upTo)
         return [];
@@ -2764,12 +2767,10 @@ module.exports = Object.fromEntries(Object.entries(commonmarkJson).map(([index, 
     var expected = document.createElement();
     expected.innerHTML = json.html;
 
-    var resultHtml = dom.buildDom(["div"]);
-
     var key = `test: example ${index}: "${markdown.replaceAll("\n", "\\n")}"`;
 
     return [key, function () {
-        renderMarkdown(markdown, resultHtml);
+        markdownRenderer.render(markdown);
         var res = resultHtml.innerHTML;
         res = res.replaceAll(`\\n`, `\n`);//TODO?
         res = res.replaceAll(`\\\\`, `\\`);//TODO?
