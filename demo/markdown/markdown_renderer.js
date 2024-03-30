@@ -51,25 +51,17 @@ class MarkdownRenderer {
     }
 
     trySelectToken(tokens, range) {
-        var hasIntersection = false;
         for (let i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (!token.range || !token.range.intersects(range))
                 continue;
 
-            if (token.children) {
-                hasIntersection = this.trySelectToken(token.children, range);
-                if (hasIntersection) {
-                    continue;
-                }
-            }
-            if (token.html) {
+            if (token.children.length > 0) {
+                this.trySelectToken(token.children, range);
+            } else if (token.html) {
                 this.selectToken(token);
-                hasIntersection = true;
             }
         }
-
-        return hasIntersection;
     }
 
     selectToken(token) {
@@ -81,7 +73,16 @@ class MarkdownRenderer {
     }
 
     getLinkLabel(token) {
-        return JSON.stringify(token.children.map(child => (typeof child === "string") ? child.toLowerCase() : ""));//TODO circular
+        return JSON.stringify(token.children.map(child => {
+            if (child.tagName === "textNode") {
+                return child.params.value.toLowerCase();
+            } else if (child.tagName === "newLine") {
+                return "\n";
+            } else {
+                return "";
+            }
+        }));//TODO
+        // circular
     }
 
     getEntityValue = (value) => {
@@ -109,48 +110,50 @@ class MarkdownRenderer {
         let l = tokens.length;
         for (let i = 0; i < l; i++) {
             let token = tokens[i];
-            if (typeof token == "string") {
-                dom.buildDom(this.getEntityValue(token), parentHtml);
-            } else {
-                if (token.isReference)
-                    continue;
+            if (token.isReference)
+                continue;
 
-                let arr = [token.tagName];
-                var params = {};
-                switch (token.tagName) {
-                    case "a":
-                    case "img":
-                        if (parentHtml.innerHTML.endsWith("["))
-                            parentHtml.innerHTML = parentHtml.innerHTML.substring(0, -1);
-
-                        if (token.hasReference) {
-                            const linkLabel = this.getLinkLabel(token);
-                            var foundToken = this.parsedTokens.find((value) => value.isReference && this.getLinkLabel(value) === linkLabel);
-                            if (foundToken) {
-                                token.href = foundToken.href;
-                                token.title = foundToken.title;
-                            } else {
-                                dom.buildDom("[" + token.children[0] + "]", parentHtml);
-                                continue;
-                            }
-                        }
-
-                        token.href ||= "";
-
-                        if (token.tagName === "a") {
-                            params["href"] = encodeURI(token.href);
+            let arr = [token.tagName];
+            var params = {};
+            switch (token.tagName) {
+                case "newLine":
+                    params = null;
+                    arr = "\n";
+                    break;
+                case "textNode":
+                    params = null;
+                    arr = this.getEntityValue(token.params.value);
+                    break;
+                case "a":
+                case "img":
+                    if (token.hasReference) {
+                        const linkLabel = this.getLinkLabel(token);
+                        var foundToken = this.parsedTokens.find((value) => value.isReference && this.getLinkLabel(value) === linkLabel);
+                        if (foundToken) {
+                            token.params.href = foundToken.params.href;
+                            token.params.title = foundToken.params.title;
                         } else {
-                            params["src"] = token.href;
-                            params["alt"] = token.children[0];
-                            token.children = [];
+                            dom.buildDom("[" + token.children[0].params.value + "]", parentHtml);
+                            continue;
                         }
-                        params["title"] = token.title;
+                    }
 
-                        break;
-                    case "list":
-                        if (token.isOrdered) {
-                            arr[0] = "ol";
-                            var start = Number(token.start);
+                    token.params.href ||= "";
+
+                    if (token.tagName === "a") {
+                        params["href"] = encodeURI(token.params.href);
+                    } else {
+                        params["src"] = token.params.href;
+                        params["alt"] = token.children[0].params.value;
+                        token.children = [];
+                    }
+                    params["title"] = token.params.title;
+
+                    break;
+                case "list":
+                    if (token.params.isOrdered) {
+                        arr[0] = "ol";
+                            var start = Number(token.params.start);
                             if (start !== 1)
                                 arr.push({"start": start.toString()});
                         } else {
@@ -158,24 +161,23 @@ class MarkdownRenderer {
                         }
                         break;
                     case "header":
-                        arr[0] = "h" + token.heading;
+                        arr[0] = "h" + token.params.heading;
                         break;
                     case "code":
-                        if (token.info)
-                            arr.push({"class": "language-" + token.info});
+                        if (token.params.info)
+                            arr.push({"class": "language-" + token.params.info});
                         break;
                     case "htmlBlock":
                         this.renderTokens(token.children, parentHtml);
                         continue;
                 }
-                if (token.isRawHtml)
+                if (token.params.isRawHtml)
                     params = token.attributes;
-                arr.push(params);
+                params && arr.push(params);
                 let html = dom.buildDom(arr, parentHtml);
                 token.html = html;
                 if (token.children && token.children.length)
                     this.renderTokens(token.children, html);
-            }
         }
     }
 

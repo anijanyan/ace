@@ -9,11 +9,70 @@ const Tokenizer = CustomTokenizer;
 const MarkdownHighlightRules = require(src + "mode/markdown_highlight_rules").MarkdownHighlightRules;
 const Range = require(src + "range").Range;
 
+var row = 0;
+var column = 0;
+
+class MarkdownToken {
+    tagName;
+    children = [];
+    parentToken;
+    params = {};
+    from;
+    range;
+
+    constructor(tagName, parentToken, params) {
+        this.tagName = tagName;
+        this.parentToken = parentToken;
+        this.params = params || {};
+        this.from = this.getPoint();
+    }
+
+    createChildToken(tagName, params) {
+        return new MarkdownToken(tagName, this, params);
+    }
+
+    addToken(tagName, params) {
+        this.addChild(this.createChildToken(tagName, params));
+    }
+
+    createTextToken(value) {
+        var textToken = this.createChildToken("textNode", {value: value});
+        var to = {
+            row: textToken.from.row,
+            column: textToken.from.column + value.length
+        };
+        textToken.calcRange(to);
+        return textToken;
+    }
+
+    addTextToken(value) {
+        this.addChild(this.createTextToken(value));
+    }
+
+    addChild(child) {
+        this.children.push(child);
+    }
+
+    addNewLine() {
+        this.addToken("newLine");
+    }
+
+    getPoint() {
+        return {row: row, column: column}
+    }
+
+    calcRange(to) {
+        to ||= this.getPoint();
+        this.range = Range.fromPoints(this.from, to);
+    }
+}
+
 class MarkdownParser {
     string = "";
 
     parsedTokens = [];
-    parsedToken = null;//{tagName: "", value: "", children: [], parentToken: {}};
+    /** @type {MarkdownToken} */
+    parsedToken = null;
 
     currToken;
     nextToken;
@@ -21,8 +80,6 @@ class MarkdownParser {
 
     blockquoteCount = 0;
     currLine;
-    row = 0;
-    column = 0;
 
     tokenizer = new Tokenizer(new MarkdownHighlightRules().getRules(), "markdown");
 
@@ -48,8 +105,8 @@ class MarkdownParser {
         this.startState = undefined;
 
         this.blockquoteCount = 0;
-        this.row = 0;
-        this.column = 0;
+        row = 0;
+        column = 0;
 
         this.isPreviousEmpty = false;
         this.shouldIgnoreLine = false;
@@ -63,8 +120,8 @@ class MarkdownParser {
 
     getGithubRegexp(toTheEnd) {
         var regexpLine = "^ *"
-            + this.parsedToken.startingChar
-            + "{" + this.parsedToken.startFence.length + ",}";
+            + this.parsedToken.params.startingChar
+            + "{" + this.parsedToken.params.startFence.length + ",}";
         if (toTheEnd)
             regexpLine += "$";
         return new RegExp(regexpLine);
@@ -75,20 +132,23 @@ class MarkdownParser {
             console.log("shouldn't get here");//TODO handle this error
             return;
         }
-        var delimiter = this.parsedToken.del;
+        var delimiter = this.parsedToken.params.del;
         if (tokenName === "string.strong")
             delimiter += delimiter;
 
         var length = delimiter.length;
         var shouldClose = false;
 
-        var regexp = new RegExp("^\\" + this.parsedToken.del + "+$")
+        var regexp = new RegExp("^\\" + this.parsedToken.params.del + "+$")
         if (regexp.test(value)) {
             var children = this.parsedToken.children;
-            if (children.length > 0)
-                children.unshift(delimiter);
+            if (children.length > 0) {
+                children.unshift(this.parsedToken.createTextToken(value));
+            }
+
             this.removeToken();
-            this.parsedToken.children.push(...children, value);
+            this.parsedToken.children.push(...children);
+            this.parsedToken.addTextToken(value);
             return;
         }
 
@@ -103,24 +163,24 @@ class MarkdownParser {
             value = value.substring(0, value.length - length);
             shouldClose = true;
         }
-        this.parsedToken.children.push(value);
+        this.parsedToken.addTextToken(value);
         shouldClose && this.closeToken();
     }
 
     handleLinkTitle(value, isEscaped) {
-        if (this.isNewLine && this.parsedToken.title !== undefined)
-            this.parsedToken.title += "\n";
+        if (this.isNewLine && this.parsedToken.params.title !== undefined)
+            this.parsedToken.params.title += "\n";
         this.isNewLine = false;
-        this.parsedToken.quot ||= value.substring(0, 1);
-        this.parsedToken.title ||= "";
+        this.parsedToken.params.quot ||= value.substring(0, 1);
+        this.parsedToken.params.title ||= "";
         if (!isEscaped) {
-            value = value.replaceAll(this.parsedToken.quot, "");
-            if (this.parsedToken.quot === "(")//TODO
+            value = value.replaceAll(this.parsedToken.params.quot, "");
+            if (this.parsedToken.params.quot === "(")//TODO
                 value = value.replaceAll(")", "");
         }
 
         value = value.replaceAll('"', "&quot;");
-        this.parsedToken.title += value;
+        this.parsedToken.params.title += value;
     }
 
     getListParams(value) {
@@ -142,19 +202,19 @@ class MarkdownParser {
         if (this.parsedToken) {
             if (this.parsedToken.tagName === "p" ||
                 (this.parsedToken.tagName === "list"
-                    && (this.parsedToken.isOrdered !== params.isOrdered ||
-                        this.parsedToken.del !== params.del)))
+                    && (this.parsedToken.params.isOrdered !== params.isOrdered ||
+                        this.parsedToken.params.del !== params.del)))
                 this.closeToken();
         }
 
         if (this.parsedToken && this.parsedToken.tagName === "list") {
-            if (this.parsedToken.isOrdered !== params.isOrdered ||
-                this.parsedToken.del !== params.del
+            if (this.parsedToken.params.isOrdered !== params.isOrdered ||
+                this.parsedToken.params.del !== params.del
             )
                 this.closeToken();
         }
 
-        if (this.parsedToken?.tagName !== "list")
+        if (!this.parsedToken || this.parsedToken.tagName !== "list")
             this.openToken("list", params);
     }
 
@@ -209,7 +269,7 @@ class MarkdownParser {
                 return;
 
             if (this.parsedToken) {
-                if (tagName === "li" && this.parsedToken.tagName === "list" && this.parsedToken.indent === type.indent) {
+                if (tagName === "li" && this.parsedToken.tagName === "list" && this.parsedToken.params.indent === type.indent) {
                     return;
                 } else if (this.isLink(this.parsedToken)) {
                     return;
@@ -240,9 +300,9 @@ class MarkdownParser {
                     } else if (this.parsedToken) {
                         if (this.parsedToken.tagName === "p" && this.parsedToken.parentToken && this.parsedToken.parentToken.tagName === "li")
                             return;
-                        if ((this.parsedToken.tagName === tagName) && (!type.indent || type.indent === this.parsedToken.indent))
+                        if ((this.parsedToken.tagName === tagName) && (!type.indent || type.indent === this.parsedToken.params.indent))
                             return;
-                        if (this.parsedToken.isRawHtml && this.currToken.type.name.endsWith(".xml"))
+                        if (this.parsedToken.params.isRawHtml && this.currToken.type.name.endsWith(".xml"))
                             return;
                     }
                     break;
@@ -259,7 +319,7 @@ class MarkdownParser {
                         var blockquoteToken;
                         if (this.parsedToken.tagName === tagName) {
                             blockquoteToken = this.parsedToken;
-                        } else if (this.parsedToken.isRawHtml) {
+                        } else if (this.parsedToken.params.isRawHtml) {
                             var parent = this.parsedToken;
                             while (parent) {
                                 if (parent.tagName === tagName) {
@@ -276,10 +336,10 @@ class MarkdownParser {
                             }
                         }
                         if (blockquoteToken) {
-                            if (blockquoteToken.level >= count) {
+                            if (blockquoteToken.params.level >= count) {
                                 return;
                             } else {
-                                i = blockquoteToken.level;
+                                i = blockquoteToken.params.level;
                             }
                         }
 
@@ -306,7 +366,8 @@ class MarkdownParser {
                                 }
                             } else {
                                 this.openToken("htmlBlock", {isRawHtml: true});
-                                this.parsedToken.children.push("</", tagName, ">");
+
+                                this.parsedToken.addTextToken("</" + tagName + ">");
                             }
 
                             return;
@@ -363,7 +424,16 @@ class MarkdownParser {
                 break;
             case "li":
                 this.handleList(value);
-                params.isUsingP = this.parsedToken.isUsingP;
+                params.isUsingP = this.parsedToken.params.isUsingP;
+                break;
+            case "a":
+            case "img":
+                if (this.parsedToken && this.parsedToken.tagName === "p"
+                    && this.prevToken && this.prevToken.value.endsWith("[")) {
+                    var lastIndex = this.parsedToken.children.length - 1;
+                    var lastChild = this.parsedToken.children[lastIndex];
+                    lastChild.params.value = lastChild.params.value.slice(0, -1);
+                }
                 break;
         }
 
@@ -410,18 +480,8 @@ class MarkdownParser {
         this.parsedToken.tagName = tagName;
     }
 
-    createToken(tagName, parentToken, createdToken) {
-        createdToken ||= {};
-        createdToken.tagName = tagName;
-        createdToken.children = [];
-        createdToken.parentToken = parentToken;
-
-        return createdToken;
-    }
-
     openToken(tagName, params) {
-        this.parsedToken = this.createToken(tagName, this.parsedToken, params);
-        this.parsedToken.from = {row: this.row, column: this.column};
+        this.parsedToken = new MarkdownToken(tagName, this.parsedToken, params);
     }
 
     closeToken(count) {
@@ -429,7 +489,7 @@ class MarkdownParser {
         if (!this.parsedToken)
             return;
 
-        this.parsedToken.range = Range.fromPoints(this.parsedToken.from, {row: this.row, column: this.column});
+        this.parsedToken.calcRange();
 
         var parentToken = this.parsedToken.parentToken;
 
@@ -451,14 +511,20 @@ class MarkdownParser {
 
                     var lastIndex = this.parsedToken.children.length - 1;
                     var lastChild = this.parsedToken.children[lastIndex];
-                    if (lastChild && (lastChild === "\n" || lastChild.tagName === "br")) {
-                        this.parsedToken.children.pop();
-                    } else if (typeof lastChild === "string") {
-                        this.parsedToken.children[lastIndex] = lastChild.trimEnd();
+                    if (lastChild) {
+                        switch (lastChild.tagName) {
+                            case "newLine":
+                            case "br":
+                                this.parsedToken.children.pop();
+                                break;
+                            case "textNode":
+                                lastChild.params.value = lastChild.params.value.trimEnd();
+                                break;
+                        }
                     }
                     break;
                 case "li":
-                    if (this.parsedToken.isUsingP && !parentToken.isUsingP) {
+                    if (this.parsedToken.params.isUsingP && !parentToken.params.isUsingP) {
                         this.useParagraphForList(parentToken);
                     }
                     break;
@@ -477,26 +543,26 @@ class MarkdownParser {
     }
 
     useParagraphForList(token) {
-        token.isUsingP = true;
+        token.params.isUsingP = true;
         token.children.forEach((childToken) => {
             this.startUsingParagraphForLi(childToken);
         })
     }
 
     startUsingParagraphForLi(token) {
-        if (token.isUsingP)
+        if (token.params.isUsingP)
             return;
 
-        token.isUsingP = true;
+        token.params.isUsingP = true;
 
         var paragraph;
         var start;
         var paragraphList = [];
 
         token.children.forEach((child, i) => {
-            if (typeof child === "string") {
+            if (child.tagName === "textNode" || child.tagName === "newLine") {
                 if (!paragraph) {
-                    paragraph = this.createToken("p", token);
+                    paragraph = token.createChildToken("p");
                     start = i;
                 }
                 paragraph.children.push(child);
@@ -543,15 +609,15 @@ class MarkdownParser {
                 this.closeToken();
             }
         } else {
-            if (!lastChild || (typeof lastChild !== "string"))
+            if (!lastChild || lastChild.tagName !== "textNode")
                 return;
 
-            if (lastChild.endsWith("\\") || lastChild.endsWith("  ")) {
-                lastChild = lastChild.slice(0, -1);
-                this.parsedToken.children.push({tagName: "br"});
+            if (lastChild.params.value.endsWith("\\") || lastChild.params.value.endsWith("  ")) {
+                lastChild.params.value = lastChild.params.value.slice(0, -1);
+                this.parsedToken.addToken("br");
             }
-            this.parsedToken.children[lastIndex] = lastChild.trimEnd();
-            this.parsedToken.children.push("\n");
+            lastChild.params.value = lastChild.params.value.trimEnd();
+            this.parsedToken.addNewLine();
         }
     }
 
@@ -603,7 +669,7 @@ class MarkdownParser {
             }
             if (this.isLink(this.parsedToken) && !name.startsWith("constant"))
                 return;
-            this.parsedToken.children.push(value);
+            this.parsedToken.addTextToken(value);
         }
 
         if (name.startsWith("markup.heading.")) {
@@ -613,14 +679,14 @@ class MarkdownParser {
                 this.openToken("p");
                 addChildValue();
             } else {
-                this.parsedToken.heading = name.split(".")[2];
+                this.parsedToken.params.heading = name.split(".")[2];
             }
 
             return;
         }
         if (name.startsWith("markup.list") && this.parsedToken.tagName === "li") {
-            this.parsedToken.indent = Number(name.split(".")[2]) || value.length;//TODO
-            this.parsedToken.parentToken.indent = this.parsedToken.indent;
+            this.parsedToken.params.indent = Number(name.split(".")[2]) || value.length;//TODO
+            this.parsedToken.parentToken.params.indent = this.parsedToken.params.indent;
             return;
         }
         if (name.endsWith(".xml")) {
@@ -653,8 +719,8 @@ class MarkdownParser {
             case "text":
             case "heading":
             case "constant":
-                if (this.parsedToken && this.parsedToken.isRawHtml) {
-                    this.parsedToken.children.push(value);
+                if (this.parsedToken && this.parsedToken.params.isRawHtml) {
+                    this.parsedToken.addTextToken(value);
                     return;
                 }
                 if (name === "heading") {
@@ -684,19 +750,19 @@ class MarkdownParser {
                         value = value.replace(/^ /, "");
                         break;
                     } else if (parent.tagName === "li") {
-                        indent += parent.indent;
+                        indent += parent.params.indent;
                     }
                     parent = parent.parentToken;
                 }
                 if (!parent) {
-                    switch (this.parsedToken.name) {
+                    switch (this.parsedToken.params.name) {
                         case "githubblock":
-                            if (this.parsedToken.isFirstLine) {
+                            if (this.parsedToken.params.isFirstLine) {
                                 value = value.replace(this.getGithubRegexp(), "").trimStart();
-                                this.parsedToken.info = value.split(" ")[0];
+                                this.parsedToken.params.info = value.split(" ")[0];
                                 return;
-                            } else if (this.parsedToken.indent) {
-                                var regexp = "^ {1," + this.parsedToken.indent + "}"
+                            } else if (this.parsedToken.params.indent) {
+                                var regexp = "^ {1," + this.parsedToken.params.indent + "}"
                                 value = value.replace(new RegExp(regexp), "");
                             }
                             break;
@@ -708,15 +774,15 @@ class MarkdownParser {
                             break;
                     }
                 }
-                if (this.parsedToken.name === "codeBlockInline" && !value.trim().length) {
-                    this.parsedToken.temporaryChildren.push(value);
+                if (this.parsedToken.params.name === "codeBlockInline" && !value.trim().length) {
+                    this.parsedToken.params.temporaryChildren.push(value);
                     return;
                 }
                 if (!value.length)
                     return;
                 return addChildValue();
             case "list":
-                if (this.parsedToken.isUsingP && this.parsedToken.tagName !== "p")
+                if (this.parsedToken.params.isUsingP && this.parsedToken.tagName !== "p")
                     this.openToken("p");
                 if (this.parsedToken.tagName === "li")
                     this.handleParagraph();
@@ -730,7 +796,7 @@ class MarkdownParser {
                     return this.handleLinkTitle(value, true);
                 return addChildValue();
             case "markup.underline":
-                this.parsedToken.href = value;
+                this.parsedToken.params.href = value;
                 return;
             case "string":
                 return this.handleLinkTitle(value);
@@ -745,18 +811,18 @@ class MarkdownParser {
                     console.log("should not get here");
                     return;
                 }
-                if (!this.parsedToken.isRawHtml && this.parsedToken.tagName !== "p")
+                if (!this.parsedToken.params.isRawHtml && this.parsedToken.tagName !== "p")
                     this.openToken("p");
                 addChildValue();
                 return;
             case "url":
                 this.openToken("p");
                 this.openToken("a");
-                this.parsedToken.children.push(value);
-                this.parsedToken.href = "";
+                this.parsedToken.addTextToken(value);
+                this.parsedToken.params.href = "";
                 if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(value))//TODO
-                    this.parsedToken.href = "mailto:";
-                this.parsedToken.href += value;
+                    this.parsedToken.params.href = "mailto:";
+                this.parsedToken.params.href += value;
                 this.closeToken(2);
                 return;
         }
@@ -795,9 +861,9 @@ class MarkdownParser {
                 === "indent" && this.isPreviousEmpty)) {
                 var newIndent = markupType.startsWith("markup.list") ? Number(markupType.split(".")[2])
                     : this.firstToken.value.length;
-                while (this.parsedToken && (["li", "list"].includes(this.parsedToken.tagName) || this.parsedToken.isRawHtml)) {
-                    var listToken = this.parsedToken.isRawHtml ? this.getParent(this.parsedToken, "li") : this.parsedToken;
-                    var diff = newIndent - listToken.indent;
+                while (this.parsedToken && (["li", "list"].includes(this.parsedToken.tagName) || this.parsedToken.params.isRawHtml)) {
+                    var listToken = this.parsedToken.params.isRawHtml ? this.getParent(this.parsedToken, "li") : this.parsedToken;
+                    var diff = newIndent - listToken.params.indent;
 
                     if (diff >= 2)//should create sublist
                         break;
@@ -827,12 +893,12 @@ class MarkdownParser {
         if (!this.parsedToken)
             return;
 
-        if (this.parsedToken.isRawHtml) {
+        if (this.parsedToken.params.isRawHtml) {
             if (this.hasParent(this.parsedToken, "li"))
                 return this.handleNewLineForLi();
             if (this.isHtml(this.tokens[0]) || this.blockquoteCount > 0) {
                 if (this.parsedToken.doneAttributes) {
-                    this.parsedToken.children.push("\n");
+                    this.parsedToken.addNewLine();
                 } else if (this.parsedToken.attributeName) {
                     this.parsedToken.attributes[this.parsedToken.attributeName] += "\n";
                 }
@@ -853,24 +919,30 @@ class MarkdownParser {
                 var requiredType = this.parsedToken.tagName === "blockquote" ? "string.blockquote"
                     : "support.function";
                 if (this.firstTokenType === "empty" || this.firstTokenType === requiredType) {
-                    switch (this.parsedToken.name) {
+                    switch (this.parsedToken.params.name) {
                         case "githubblock":
                             var regExp = this.getGithubRegexp(true);
                             if (regExp.test(this.currLine)) {
                                 this.closeToken(2);
                                 this.shouldIgnoreLine = true;
                                 return;
-                            } else if (!this.parsedToken.isFirstLine) {
-                                this.parsedToken.children.push("\n");
+                            } else if (!this.parsedToken.params.isFirstLine) {
+                                this.parsedToken.addNewLine();
                             }
-                            this.parsedToken.isFirstLine = false;
+                            this.parsedToken.params.isFirstLine = false;
                             break;
                         case "codeBlockInline":
                             if (this.parsedToken.children.length) {
-                                this.parsedToken.temporaryChildren.push("\n");
+                                this.parsedToken.params.temporaryChildren.push("\n");
                                 if (this.currLine.trim().length) {
-                                    this.parsedToken.children.push(...this.parsedToken.temporaryChildren);
-                                    this.parsedToken.temporaryChildren = [];
+                                    for (var child of this.parsedToken.params.temporaryChildren) {
+                                        if (child === "\n") {
+                                            this.parsedToken.addNewLine();
+                                        } else {
+                                            this.parsedToken.addTextToken(child);
+                                        }
+                                    }
+                                    this.parsedToken.params.temporaryChildren = [];
                                 }
                             }
                             break;
@@ -881,7 +953,7 @@ class MarkdownParser {
                                 return;
                             }
                             if (this.parsedToken.children.length > 0)
-                                this.parsedToken.children.push(" ");
+                                this.parsedToken.addTextToken(" ");
 
                             break;
                     }
@@ -904,7 +976,7 @@ class MarkdownParser {
         var currTokenTypeName = currTokenType.name;
         if (!this.parsedToken)
             return false;
-        if (this.parsedToken.isRawHtml) {
+        if (this.parsedToken.params.isRawHtml) {
             return (currTokenTypeName === "empty" && !this.isHtml(this.currToken))
                 || (this.parsedToken.tagName === "htmlBlock" && currTokenTypeName.endsWith("tag-open.xml"));
         }
@@ -924,7 +996,7 @@ class MarkdownParser {
             default:
                 switch (this.parsedToken.tagName) {
                     case "code":
-                        return (this.parsedToken.name === "codeSpan" && /^`+$/.test(this.currToken.value.trim()));
+                        return (this.parsedToken.params.name === "codeSpan" && /^`+$/.test(this.currToken.value.trim()));
                     case "a":
                     case "img":
                         if (currTokenTypeName === "text") {
@@ -945,7 +1017,7 @@ class MarkdownParser {
 
         this.lines.forEach((line, i) => {
             this.currLine = line;
-            this.row = i;
+            row = i;
             this.shouldIgnoreLine = false;
             this.isNewLine = true;
 
@@ -959,7 +1031,7 @@ class MarkdownParser {
             if (this.shouldIgnoreLine)
                 return;
 
-            this.column = 0;
+            column = 0;
             for (let j = 0; j < this.tokens.length; j++) {
                 if (this.currToken)
                     this.prevToken = this.currToken;
@@ -971,7 +1043,7 @@ class MarkdownParser {
                 var shouldCloseToken = this.shouldCloseCurrToken();
 
                 if (shouldCloseToken) {
-                    this.column += this.currToken.value.length;
+                    column += this.currToken.value.length;
                     var shouldContinue = this.parsedToken.tagName !== "a";//TODO
                     this.closeToken();
                     if (shouldContinue)
@@ -984,7 +1056,7 @@ class MarkdownParser {
                 this.buildTokenTree(this.currToken.type.parent, value);
                 this.parseToken(typeName, value, j === 0);
                 if (!shouldCloseToken)
-                    this.column += value.length;
+                    column += value.length;
             }
         });
         this.closeToken(Infinity);
