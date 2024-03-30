@@ -11,6 +11,7 @@ var dom = require(src + "/lib/dom");
 var assert = require(src + "/test/assertions");
 var MarkdownRenderer = require("./markdown_renderer").MarkdownRenderer;
 
+//tests from github
 var commonmarkJson = {
     "1": {
         "markdown": "\tfoo\tbaz\t\tbim",
@@ -2753,6 +2754,15 @@ var commonmarkJson = {
         "html": "<p>Multiple     spaces</p>"
     }
 }
+
+//manual tests
+var index = 677;
+Object.assign(commonmarkJson, Object.fromEntries([
+    {
+        "markdown": "Ace linters is released under the [MIT License](https://opensource.org/licenses/MIT).",
+        "html": "<p>Ace linters is released under the <a href=\"https://opensource.org/licenses/MIT\">MIT License</a>.</p>"
+    },
+].map((value) => [++index, value])));
 
 var startFrom = 0;
 var upTo = Infinity;
