@@ -2756,13 +2756,23 @@ var commonmarkJson = {
 }
 
 //manual tests
-var index = 677;
+var length = Number(Object.keys(commonmarkJson).pop()) + 1;
 Object.assign(commonmarkJson, Object.fromEntries([
     {
         "markdown": "Ace linters is released under the [MIT License](https://opensource.org/licenses/MIT).",
         "html": "<p>Ace linters is released under the <a href=\"https://opensource.org/licenses/MIT\">MIT License</a>.</p>"
     },
-].map((value) => [++index, value])));
+    {
+        "markdown": "- foo *bar*\n\n  bar",
+        "html": "<ul><li><p>foo <em>bar</em></p><p>bar</p></li></ul>"
+    },
+    // {
+    //     "markdown": "- foo\n\n- bar *bar*\n- foo",
+    //     "html": "<ul><li><p>foo</p><p>bar <em>bar</em></p></li><li><p>foo</p></li></ul>"
+    // },
+
+
+].map((value, index) => [length + index, value])));
 
 var startFrom = 0;
 var upTo = Infinity;

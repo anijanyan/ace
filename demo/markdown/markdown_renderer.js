@@ -38,6 +38,42 @@ class MarkdownRenderer {
         this.editor.on("input", this.renderEditorValue);
         this.editor.selection.on("changeCursor", this.onSelect);
         this.editor.selection.on("changeSelection", this.onSelect);
+        this.editor.session.on("changeScrollTop", this.onScroll);
+    }
+
+
+    onScroll = (e, session) => {
+        var row = Math.floor(this.editor.renderer.getScrollTopRow());
+        this.clearScrolled();
+
+        return this.scrollIntoToken(this.parsedTokens, row);
+    }
+
+    clearScrolled() {
+        const scrolledElement = document.getElementById("ace-scrolled-to");
+        if (!scrolledElement)
+            return;
+        scrolledElement.parentNode.removeChild(scrolledElement);
+    }
+
+    scrollIntoToken(tokens, row) {
+        for (let i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+
+            if (!token.range)
+                continue;
+
+            if (token.children.length > 0) {
+                if (token.range.contains(row, 0)) {
+                    return this.scrollIntoToken(token.children, row);
+                }
+            } else if (token.from.row === row) {
+                var scrolledTo = document.createElement("div");
+                scrolledTo.setAttribute("id", "ace-scrolled-to");
+                token.html.parentNode.insertBefore(scrolledTo, token.html);
+                return scrolledTo.scrollIntoView({behavior: "auto"});
+            }
+        }
     }
 
     onSelect = (e, selection) => {

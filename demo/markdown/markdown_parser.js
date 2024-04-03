@@ -35,6 +35,10 @@ class MarkdownToken {
         this.addChild(this.createChildToken(tagName, params));
     }
 
+    updateTagName(tagName) {
+        this.tagName = tagName;
+    }
+
     createTextToken(value) {
         var textToken = this.createChildToken("textNode", {value: value});
         var to = {
@@ -64,6 +68,18 @@ class MarkdownToken {
     calcRange(to) {
         to ||= this.getPoint();
         this.range = Range.fromPoints(this.from, to);
+    }
+
+    getFirstParent(tagName) {
+        if (this.tagName === tagName)
+            return this;
+        if (this.parentToken)
+            return this.parentToken.getFirstParent(tagName);
+        return null;
+    }
+
+    hasParent(tagName) {
+        return this.getFirstParent(tagName)!== null;
     }
 }
 
@@ -248,21 +264,6 @@ class MarkdownParser {
         return false;
     }
 
-    getParent(token, tagName) {
-        while (token) {
-            if (token.tagName === tagName)
-                return token;
-            token = token.parentToken;
-        }
-        return null;
-    }
-
-    hasParent(token, tagName) {
-        return this.getParent(token, tagName) != null;
-    }
-
-
-
     buildTokenTree(type, value, childTag) {
         var tryBuildParent = () => {
             if (!type.parent)
@@ -358,7 +359,7 @@ class MarkdownParser {
                             return;
                         tagName = this.currToken.value;
                         if (this.prevToken.type.name.endsWith("end-tag-open.xml")) {
-                            if (this.hasParent(this.parsedToken, tagName)) {
+                            if (this.parsedToken && this.parsedToken.hasParent(tagName)) {
                                 var done = false;
                                 while (this.parsedToken && !done) {
                                     done = this.parsedToken.tagName === tagName;
@@ -476,10 +477,6 @@ class MarkdownParser {
         }
     }
 
-    updateToken(tagName) {
-        this.parsedToken.tagName = tagName;
-    }
-
     openToken(tagName, params) {
         this.parsedToken = new MarkdownToken(tagName, this.parsedToken, params);
     }
@@ -555,35 +552,36 @@ class MarkdownParser {
 
         token.params.isUsingP = true;
 
-        var paragraph;
-        var start;
-        var paragraphList = [];
+        var children = token.children;
+        token.children = [];
 
-        token.children.forEach((child, i) => {
-            if (child.tagName === "textNode" || child.tagName === "newLine") {
-                if (!paragraph) {
-                    paragraph = token.createChildToken("p");
-                    start = i;
+        var paragraph;
+        children.forEach((child, i) => {
+            if (child.tagName === "list") {
+                if (paragraph) {
+                    token.addChild(paragraph);
+                    paragraph = null;
                 }
-                paragraph.children.push(child);
-            } else if (paragraph) {
-                paragraphList.push({
-                    "paragraph": paragraph,
-                    "start": start,
-                    "count": i - start
-                })
-                paragraph = null;
+                token.addChild(child);
+            } else {
+                if (!paragraph)
+                    paragraph = token.createChildToken("p");
+                paragraph.addChild(child);
             }
         });
-        paragraph && paragraphList.push({
-            "paragraph": paragraph,
-            "start": start,
-            "count": token.children.length - start
-        });
+        if (paragraph)
+            token.addChild(paragraph);
+    }
 
-        paragraphList.forEach((paragraphData) => {
-            token.children.splice(paragraphData.start, paragraphData.count, paragraphData.paragraph)
-        })
+
+    useParagraphForLi() {
+        this.startUsingParagraphForLi(this.parsedToken);
+        if (this.isPreviousEmpty) {
+            this.isPreviousEmpty = false;
+        } else if (this.parsedToken.children[this.parsedToken.children.length - 1].tagName === "p") {
+            this.parsedToken = this.parsedToken.children.pop();
+            this.handleParagraph();
+        }
     }
 
     removeToken() {
@@ -604,7 +602,7 @@ class MarkdownParser {
         var lastChild = this.parsedToken.children[lastIndex];
         if (this.firstTokenType.startsWith("markup.heading.")) {
             if (["=", "-"].includes(this.firstToken.value.trim()[0])) {
-                this.updateToken("header");
+                this.parsedToken.updateTagName("header");
             } else {
                 this.closeToken();
             }
@@ -618,16 +616,6 @@ class MarkdownParser {
             }
             lastChild.params.value = lastChild.params.value.trimEnd();
             this.parsedToken.addNewLine();
-        }
-    }
-
-    useParagraphForLi() {
-        this.startUsingParagraphForLi(this.parsedToken);
-        if (this.isPreviousEmpty) {
-            this.isPreviousEmpty = false;
-        } else if (this.parsedToken.children[this.parsedToken.children.length - 1].tagName === "p") {
-            this.parsedToken = this.parsedToken.children.pop();
-            this.handleParagraph();
         }
     }
 
@@ -674,7 +662,7 @@ class MarkdownParser {
 
         if (name.startsWith("markup.heading.")) {
             if (/^#+$/.test(value) && this.parsedToken.tagName === "p") //TODO hacked
-                this.updateToken("header");
+                this.parsedToken.updateTagName("header");
             if (!this.parsedToken) {
                 this.openToken("p");
                 addChildValue();
@@ -862,7 +850,9 @@ class MarkdownParser {
                 var newIndent = markupType.startsWith("markup.list") ? Number(markupType.split(".")[2])
                     : this.firstToken.value.length;
                 while (this.parsedToken && (["li", "list"].includes(this.parsedToken.tagName) || this.parsedToken.params.isRawHtml)) {
-                    var listToken = this.parsedToken.params.isRawHtml ? this.getParent(this.parsedToken, "li") : this.parsedToken;
+                    var listToken = this.parsedToken.params.isRawHtml
+                        ? this.parsedToken.getFirstParent("li")
+                        : this.parsedToken;
                     var diff = newIndent - listToken.params.indent;
 
                     if (diff >= 2)//should create sublist
@@ -894,7 +884,7 @@ class MarkdownParser {
             return;
 
         if (this.parsedToken.params.isRawHtml) {
-            if (this.hasParent(this.parsedToken, "li"))
+            if (this.parsedToken.hasParent("li"))
                 return this.handleNewLineForLi();
             if (this.isHtml(this.tokens[0]) || this.blockquoteCount > 0) {
                 if (this.parsedToken.doneAttributes) {
