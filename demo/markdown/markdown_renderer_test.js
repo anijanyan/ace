@@ -2782,6 +2782,14 @@ Object.assign(commonmarkJson, Object.fromEntries([
         "markdown": "- foo\n\n- bar *bar*\n- foo",
         "html": "<ul><li><p>foo</p></li><li><p>bar <em>bar</em></p></li><li><p>foo</p></li></ul>"
     },
+    {
+        "markdown": "- foo [ref](url)\n\nbar",
+        "html": "<ul><li>foo <a href=\"url\">ref</a></li></ul><p>bar</p>"
+    },
+    {
+        "markdown": "- a\n- b\n\nc\n\n- d\n- f",
+        "html": "<ul><li>a</li><li>b</li></ul><p>c</p><ul><li>d</li><li>f</li></ul>"
+    },
 
 
 ].map((value, index) => [length + index, value])));

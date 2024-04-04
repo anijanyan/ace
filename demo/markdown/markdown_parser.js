@@ -115,6 +115,7 @@ class MarkdownParser {
     firstToken;
     firstTokenType;
 
+    isEmptyLine = false;
     isPreviousEmpty = false;
     shouldIgnoreLine = false;
     isNewLine = false;
@@ -132,6 +133,7 @@ class MarkdownParser {
         row = 0;
         column = 0;
 
+        this.isEmptyLine = false;
         this.isPreviousEmpty = false;
         this.shouldIgnoreLine = false;
         this.isNewLine = false;
@@ -527,9 +529,8 @@ class MarkdownParser {
                     }
                     break;
                 case "li":
-                    if (this.parsedToken.params.isUsingP && !parentToken.params.isUsingP) {
+                    if (this.parsedToken.params.isUsingP && !parentToken.params.isUsingP)
                         this.useParagraphForList(parentToken);
-                    }
                     break;
             }
         }
@@ -582,9 +583,7 @@ class MarkdownParser {
 
     useParagraphForLi() {
         this.startUsingParagraphForLi(this.parsedToken);
-        if (this.isPreviousEmpty) {
-            this.isPreviousEmpty = false;
-        } else if (this.parsedToken.children[this.parsedToken.children.length - 1].tagName === "p") {
+        if (!this.isPreviousEmpty && this.parsedToken.getLastChild().tagName === "p") {
             this.parsedToken = this.parsedToken.children.pop();
             this.handleParagraph();
         }
@@ -830,12 +829,18 @@ class MarkdownParser {
         }
     }
 
-    initLine() {
+    initLine(line) {
+        this.currLine = line;
+
+        this.shouldIgnoreLine = false;
+        this.isNewLine = true;
+
         var data = this.tokenizer.getLineTokens(this.currLine, this.startState);
         this.tokens = data.tokens;
 
         this.firstToken = this.tokens[0];
         this.firstTokenType = this.firstToken.type.name;
+        this.isEmptyLine = this.firstTokenType === "empty";
 
         this.lastToken = this.tokens.at(-1);
         this.startState = (this.lastToken !== undefined
@@ -847,48 +852,50 @@ class MarkdownParser {
     getMarkupType() {
         var markupType = this.firstTokenType;
         if (["indent", "string.blockquote"].includes(markupType))
-            markupType = this.tokens[1] ? this.tokens[1].type.name : "empty";
+            markupType = this.tokens[1] ? this.tokens[1].type.name : null;
         return markupType;
     }
 
     handleNewLineForLi() {
-        var markupType = this.getMarkupType();
-
-        if (markupType === "empty") {
-            this.isPreviousEmpty = true;
+        if (this.isEmptyLine) {
             this.shouldIgnoreLine = true;
-        } else {
-            if (markupType.startsWith("markup.list") || (markupType === "list" && this.firstTokenType
-                === "indent" && this.isPreviousEmpty)) {
-                var newIndent = markupType.startsWith("markup.list") ? Number(markupType.split(".")[2])
-                    : this.firstToken.value.length;
-                while (this.parsedToken && (["li", "list"].includes(this.parsedToken.tagName) || this.parsedToken.params.isRawHtml)) {
-                    var listToken = this.parsedToken.params.isRawHtml
-                        ? this.parsedToken.getFirstParent("li")
-                        : this.parsedToken;
-                    var diff = newIndent - listToken.params.indent;
-
-                    if (diff >= 2)//should create sublist
-                        break;
-
-                    if (listToken.tagName === "list" && (diff === 0 || !listToken.parentToken))
-                        //should create list item in current list
-                        break;
-
-
-                    if (listToken.tagName === "li" && diff === 0 && !markupType.startsWith( "markup.list"))
-                        //is continuation of this li
-                        break;
-
-                    this.closeToken();
-
-                    if (diff > 0)
-                        break;
-                }
-            }
-            if (this.isPreviousEmpty)
-                this.parsedToken.tagName === "li" ? this.useParagraphForLi() : this.useParagraphForList(this.parsedToken);
+            return;
         }
+        var markupType = this.getMarkupType();
+        if (!markupType)
+            return;
+
+        if (markupType.startsWith("markup.list") || (markupType === "list" && this.firstTokenType
+            === "indent" && this.isPreviousEmpty)) {
+            var newIndent = markupType.startsWith("markup.list") ? Number(markupType.split(".")[2])
+                : this.firstToken.value.length;
+            while (this.parsedToken && (["li", "list"].includes(this.parsedToken.tagName)
+                || this.parsedToken.params.isRawHtml)) {
+                var listToken = this.parsedToken.params.isRawHtml
+                    ? this.parsedToken.getFirstParent("li")
+                    : this.parsedToken;
+                var diff = newIndent - listToken.params.indent;
+
+                if (diff >= 2)//should create sublist
+                    break;
+
+                if (listToken.tagName === "list" && (diff === 0 || !listToken.parentToken))
+                    //should create list item in current list
+                    break;
+
+
+                if (listToken.tagName === "li" && diff === 0 && !markupType.startsWith("markup.list"))
+                    //is continuation of this li
+                    break;
+
+                this.closeToken();
+
+                if (diff > 0)
+                    break;
+            }
+        }
+        if (this.isPreviousEmpty)
+            this.parsedToken.tagName === "li" ? this.useParagraphForLi() : this.useParagraphForList(this.parsedToken);
     }
 
     handleNewLineForCodeBlock() {
@@ -1023,17 +1030,16 @@ class MarkdownParser {
         this.init();
 
         this.lines.forEach((line, i) => {
-            this.currLine = line;
             row = i;
-            this.shouldIgnoreLine = false;
-            this.isNewLine = true;
 
-            this.initLine();
+            this.initLine(line);
 
             this.tryCloseList();
             this.tryCloseBlockquote();
 
             this.handleNewLine();
+
+            this.isPreviousEmpty = this.isEmptyLine;
 
             if (this.shouldIgnoreLine)
                 return;
