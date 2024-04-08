@@ -11,6 +11,7 @@ const Range = require(src + "range").Range;
 
 var row = 0;
 var column = 0;
+var endColumn = 0;
 
 class MarkdownToken {
     tagName;
@@ -24,7 +25,7 @@ class MarkdownToken {
         this.tagName = tagName;
         this.parentToken = parentToken;
         this.params = params || {};
-        this.from = this.getPoint();
+        this.from = this.getStartPoint();
     }
 
     createChildToken(tagName, params) {
@@ -41,11 +42,7 @@ class MarkdownToken {
 
     createTextToken(value) {
         var textToken = this.createChildToken("textNode", {value: value});
-        var to = {
-            row: textToken.from.row,
-            column: textToken.from.column + value.length
-        };
-        textToken.calcRange(to);
+        textToken.calcRange();
         return textToken;
     }
 
@@ -61,13 +58,16 @@ class MarkdownToken {
         this.addToken("newLine");
     }
 
-    getPoint() {
+    getStartPoint() {
         return {row: row, column: column}
     }
 
-    calcRange(to) {
-        to ||= this.getPoint();
-        this.range = Range.fromPoints(this.from, to);
+    getEndPoint() {
+        return {row: row, column: endColumn}
+    }
+
+    calcRange() {
+        this.range = Range.fromPoints(this.from, this.getEndPoint());
     }
 
     getFirstParent(tagName) {
@@ -132,6 +132,7 @@ class MarkdownParser {
         this.blockquoteCount = 0;
         row = 0;
         column = 0;
+        endColumn = 0;
 
         this.isEmptyLine = false;
         this.isPreviousEmpty = false;
@@ -1031,6 +1032,8 @@ class MarkdownParser {
 
         this.lines.forEach((line, i) => {
             row = i;
+            column = 0;
+            endColumn = 0;
 
             this.initLine(line);
 
@@ -1044,8 +1047,8 @@ class MarkdownParser {
             if (this.shouldIgnoreLine)
                 return;
 
-            column = 0;
             for (let j = 0; j < this.tokens.length; j++) {
+                column = endColumn;
                 if (this.currToken)
                     this.prevToken = this.currToken;
                 this.currToken = this.tokens[j];
@@ -1053,10 +1056,10 @@ class MarkdownParser {
 
                 var typeName = this.currToken.type.name;
 
-                var shouldCloseToken = this.shouldCloseCurrToken();
+                var value = this.currToken.value;
+                endColumn = column + value.length;
 
-                if (shouldCloseToken) {
-                    column += this.currToken.value.length;
+                if (this.shouldCloseCurrToken()) {
                     var shouldContinue = this.parsedToken.tagName !== "a";//TODO
                     this.closeToken();
                     if (shouldContinue)
@@ -1065,11 +1068,8 @@ class MarkdownParser {
                 if (typeName === "empty")
                     continue;
 
-                var value = this.currToken.value;
                 this.buildTokenTree(this.currToken.type.parent, value);
                 this.parseToken(typeName, value, j === 0);
-                if (!shouldCloseToken)
-                    column += value.length;
             }
         });
         this.closeToken(Infinity);
