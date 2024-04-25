@@ -147,7 +147,7 @@ class MarkdownRenderer {
 
         this.clearScrolled();
 
-        if (!this.rowToTokens.length)
+        if (!Object.keys(this.rowToTokens).length)
             return;
 
         var token = this.rowToTokens[row][0];
@@ -172,8 +172,6 @@ class MarkdownRenderer {
 
     onSelect = () => {
         var selectionRanges = this.editor.selection.getAllRanges();
-
-        console.log(selectionRanges);
 
         if (this.selectionRanges.toString() === selectionRanges.toString())
             return;
