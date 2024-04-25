@@ -525,6 +525,8 @@ class MarkdownParser {
                                 break;
                             case "textNode":
                                 lastChild.params.value = lastChild.params.value.trimEnd();
+                                if (lastChild.params.value.length === 0)
+                                    this.parsedToken.children.pop();
                                 break;
                         }
                     }
@@ -736,8 +738,11 @@ class MarkdownParser {
                     this.closeToken();
                     value = value.replace("]", "");
                 }
-                if (!this.parsedToken || !this.parsedToken.children.length || isStartLine)
+                if (!this.parsedToken || !this.parsedToken.children.length || isStartLine) {
                     value = value.trimStart();
+                    column = endColumn - value.length;
+                }
+
 
                 return addChildValue();
             case "support.function":
