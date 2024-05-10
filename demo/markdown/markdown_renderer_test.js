@@ -833,7 +833,7 @@ var commonmarkJson = {
         "markdown": "  \n\naaa\n  \n\n# aaa\n\n  ",
         "html": "<p>aaa</p><h1>aaa</h1>"
     },
-    /*"198": {//TODO tables extensions
+    "198": {
         "markdown": "| foo | bar |\n| --- | --- |\n| baz | bim |",
         "html": "<table><thead><tr><th>foo</th><th>bar</th></tr></thead><tbody><tr><td>baz</td><td>bim</td></tr></tbody></table>"
     },
@@ -864,7 +864,7 @@ var commonmarkJson = {
     "205": {
         "markdown": "| abc | def |\n| --- | --- |",
         "html": "<table><thead><tr><th>abc</th><th>def</th></tr></thead></table>"
-    },*/
+    },
     "206": {
         "markdown": "> # Foo\n> bar\n> baz",
         "html": "<blockquote><h1>Foo</h1><p>bar\nbaz</p></blockquote>"
@@ -2789,6 +2789,18 @@ Object.assign(commonmarkJson, Object.fromEntries([
     {
         "markdown": "- a\n- b\n\nc\n\n- d\n- f",
         "html": "<ul><li>a</li><li>b</li></ul><p>c</p><ul><li>d</li><li>f</li></ul>"
+    },
+    {
+        "markdown": "| b **\\|** im |",
+        "html": "<p>| b <strong>|</strong> im |</p>"
+    },
+    {
+        "markdown": "| b **a\\|** im |",
+        "html": "<p>| b <strong>a|</strong> im |</p>"
+    },
+    {
+        "markdown": "| b ** a\\|** im |",
+        "html": "<p>| b ** a|** im |</p>"
     },
 
 

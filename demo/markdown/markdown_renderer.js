@@ -289,14 +289,14 @@ class MarkdownRenderer {
                 continue;
 
             let arr = [token.tagName];
-            var params = {};
+            var options = token.options;
             switch (token.tagName) {
                 case "newLine":
-                    params = null;
+                    options = null;
                     arr = "\n";
                     break;
                 case "textNode":
-                    params = null;
+                    options = null;
                     arr = this.getEntityValue(token.params.value);
                     if (arr.length === 0)
                         continue;
@@ -318,13 +318,13 @@ class MarkdownRenderer {
                     token.params.href ||= "";
 
                     if (token.tagName === "a") {
-                        params["href"] = encodeURI(token.params.href);
+                        options["href"] = encodeURI(token.params.href);
                     } else {
-                        params["src"] = token.params.href;
-                        params["alt"] = token.children[0].params.value;
+                        options["src"] = token.params.href;
+                        options["alt"] = token.children[0].params.value;
                         token.children = [];
                     }
-                    params["title"] = token.params.title;
+                    options["title"] = token.params.title;
 
                     break;
                 case "list":
@@ -332,7 +332,7 @@ class MarkdownRenderer {
                         arr[0] = "ol";
                         var start = Number(token.params.start);
                         if (start !== 1)
-                            arr.push({"start": start.toString()});
+                            options["start"] = start.toString();
                     } else {
                         arr[0] = "ul";
                     }
@@ -342,15 +342,15 @@ class MarkdownRenderer {
                     break;
                 case "code":
                     if (token.params.info)
-                        arr.push({"class": "language-" + token.params.info});
+                        options["class"] = "language-" + token.params.info;
                     break;
                 case "htmlBlock":
                     this.renderTokens(token.children, parentHtml);
                     continue;
             }
             if (token.params.isRawHtml)
-                params = token.attributes;
-            params && arr.push(params);
+                options = token.attributes;
+            options && arr.push(options);
             let html = dom.buildDom(arr, parentHtml);
 
             if (typeof html === "object")
