@@ -38,7 +38,8 @@ class MarkdownRenderer {
     resultSelectionRange;
     resultScrollTop;
 
-    scrollSetFrom= null;
+    scrollSetFrom = null;
+    selectSetFrom = null;
 
     constructor(resultHTML) {
         this.resultHTML = resultHTML;
@@ -73,7 +74,19 @@ class MarkdownRenderer {
     }
 
     markdownResultSelect = () => {
+        if (this.selectSetFrom === "editor") {
+            this.selectSetFrom = null;
+            return;
+        }
+        this.selectSetFrom = "result";
+
+        this.clearHighlights();
+
         var selection = window.getSelection();
+        if (selection.type === "None") {
+            this.editor.clearSelection();
+            return;
+        }
 
         let range  = selection.getRangeAt(0);
         if (this.resultSelectionRange &&
@@ -94,9 +107,9 @@ class MarkdownRenderer {
         var startOffset = range.startOffset;
         var endOffset = range.endOffset;
 
-        var start = {...startToken.from};
+        var start = {...startToken.range.start};
         start.column += startOffset;
-        var end = {...endToken.from};
+        var end = {...endToken.range.start};
         end.column += endOffset;
 
         var aceRange = Range.fromPoints(start, end);
@@ -117,7 +130,7 @@ class MarkdownRenderer {
         this.resultScrollTop = this.resultHTML.scrollTop;
 
         const firstChild = Array.from(this.resultHTML.children).find((child) => child.offsetTop - this.resultScrollTop >= 0);
-        this.editor.renderer.scrollToRow(firstChild.$token.from.row);
+        this.editor.renderer.scrollToRow(firstChild.$token.range.start.row);
     }
 
     onScroll = () => {
@@ -171,6 +184,12 @@ class MarkdownRenderer {
     }
 
     onSelect = () => {
+        if (this.selectSetFrom === "result") {
+            this.selectSetFrom = null;
+            return;
+        }
+        this.selectSetFrom = "editor";
+
         var selectionRanges = this.editor.selection.getAllRanges();
 
         if (this.selectionRanges.toString() === selectionRanges.toString())
@@ -206,12 +225,13 @@ class MarkdownRenderer {
             startToken = startTokens[0];
             startColumn = 0;
         } else {
-            startToken = startTokens.find((token) => selectionRange.contains(startRow, token.from.column) || token.range.insideStart(startRow, start.column));
+            startToken = startTokens.find((token) => selectionRange.contains(startRow, token.range.start.column)
+                || token.range.insideStart(startRow, start.column));
             if (!startToken) {
                 startToken = [...startTokens].pop();
                 startColumn = startToken.html.length;
             } else {
-                startColumn = Math.max(start.column - startToken.from.column, 0);
+                startColumn = Math.max(start.column - startToken.range.start.column, 0);
             }
         }
 
@@ -222,7 +242,7 @@ class MarkdownRenderer {
         } else {
             endToken = endTokens.findLast((token) => token.range.intersects(selectionRange));
             endToken ||= endTokens[0];
-            endColumn = Math.max(end.column - endToken.from.column, 0);
+            endColumn = Math.max(end.column - endToken.range.start.column, 0);
             endColumn = Math.min(endColumn, endToken.html.length);
         }
 
@@ -234,13 +254,20 @@ class MarkdownRenderer {
             this.nodeRanges.push(range);
     }
 
+    clearHighlights() {
+        if (!CSS.highlights) {
+            console.log("CSS Custom Highlight API not supported");
+            return;
+        }
+        CSS.highlights.clear();
+    }
 
     highlightSelectedTokens() {
         if (!CSS.highlights) {
             console.log("CSS Custom Highlight API not supported");
             return;
         }
-        CSS.highlights.clear();
+        this.clearHighlights();
 
         const highlight = new Highlight(...this.nodeRanges);
         CSS.highlights.set("markdown-select", highlight);
@@ -365,7 +392,7 @@ class MarkdownRenderer {
     }
 
     addToRowToToken (token) {
-        var row = token.from.row;
+        var row = token.range.start.row;
         if (!this.rowToTokens[row])
             this.rowToTokens[row] = [];
         this.rowToTokens[row].push(token);

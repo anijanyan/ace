@@ -22,20 +22,22 @@ class MarkdownToken {
     from;
     range;
 
-    constructor(tagName, parentToken, params) {
+    constructor(tagName, params, parentToken) {
         this.tagName = tagName;
-        this.parentToken = parentToken;
         this.params = params || {};
+        this.parentToken = parentToken;
         this.options = this.params.options || {};
         this.from = this.getStartPoint();
     }
 
     createChildToken(tagName, params) {
-        return new MarkdownToken(tagName, this, params);
+        return new MarkdownToken(tagName, params);
     }
 
     addToken(tagName, params) {
-        this.addChild(this.createChildToken(tagName, params));
+        var token = this.createChildToken(tagName, params);
+        token.calcRange();
+        this.addChild(token);
     }
 
     updateTagName(tagName) {
@@ -54,6 +56,7 @@ class MarkdownToken {
     }
 
     addChild(child) {
+        child.parentToken = this;
         this.children.push(child);
     }
 
@@ -506,7 +509,7 @@ class MarkdownParser {
     }
 
     openToken(tagName, params) {
-        this.parsedToken = new MarkdownToken(tagName, this.parsedToken, params);
+        this.parsedToken = new MarkdownToken(tagName, params, this.parsedToken);
     }
 
     closeToken(count) {
@@ -687,8 +690,8 @@ class MarkdownParser {
 
         function addCellToRow() {
             var lastChild = cell[cell.length - 1];
-            if (typeof lastChild === "string")
-                cell[cell.length - 1] = lastChild.trimEnd();
+            if (lastChild.is("textNode"))
+                lastChild.params.value = lastChild.params.value.trimEnd();
             row.push(cell);
             cell = null;
         }
@@ -700,7 +703,13 @@ class MarkdownParser {
                 return;
             }
 
+            var range = child.range;
+            var row = range.start.row;
+            var startColumn, endColumn = range.start.column;
+
             child.params.value.split(/(\|)/).forEach(el => {
+                startColumn = endColumn;
+                endColumn += el.length;
                 if (!cell)
                     el = el.trimStart();
                 if (!row.length && !el.length)
@@ -709,8 +718,13 @@ class MarkdownParser {
                     cell && addCellToRow();
                     return;
                 }
+                startColumn = endColumn - el.length;
                 cell ||= [];
-                el.length && cell.push(el);
+                if (el.length) {
+                    var newTextToken = child.createTextToken(el);
+                    newTextToken.range = Range.fromPoints({row, column: startColumn}, {row, column: endColumn});
+                    cell.push(newTextToken);
+                }
             })
         });
         cell && cell.length && addCellToRow();
@@ -732,13 +746,11 @@ class MarkdownParser {
             if (this.tableData[i])
                 this.parsedToken.addAttribute("align", this.tableData[i]);
             cell && cell.forEach((token) => {
-                if (typeof token === "string") {
-                    this.parsedToken.addTextToken(token);
-                } else {
-                    if (token.is("code")) //TODO is this right?!!!
-                        token.children.map(child => child.params.value = child.params.value.replaceAll("\\", ""));//TODO escapes
-                    this.parsedToken.addChild(token);
-                }
+                if (token.is("code")) //TODO is this right?!!!
+                    token.children.map(child => {
+                        child.params.value = child.params.value.replaceAll("\\", "")
+                    });//TODO escapes
+                this.parsedToken.addChild(token);
             })
             this.closeToken();
         })
