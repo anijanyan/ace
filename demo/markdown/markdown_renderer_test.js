@@ -2802,6 +2802,10 @@ Object.assign(commonmarkJson, Object.fromEntries([
         "markdown": "| b ** a\\|** im |",
         "html": "<p>| b ** a|** im |</p>"
     },
+    {
+        "markdown": "| f\\|oo  |\n| ------ |\n| b `\\` az |\n| b **\\|** im |",
+        "html": "<table><thead><tr><th>f|oo</th></tr></thead><tbody><tr><td>b <code>\\</code> az</td></tr><tr><td>b <strong>|</strong> im</td></tr></tbody></table>"
+    },
 
 
 ].map((value, index) => [length + index, value])));

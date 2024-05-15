@@ -746,10 +746,11 @@ class MarkdownParser {
             if (this.tableData[i])
                 this.parsedToken.addAttribute("align", this.tableData[i]);
             cell && cell.forEach((token) => {
-                if (token.is("code")) //TODO is this right?!!!
+                if (token.is("code"))
                     token.children.map(child => {
-                        child.params.value = child.params.value.replaceAll("\\", "")
-                    });//TODO escapes
+                        var escapeSymbols = /\\([\\!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~])/g;
+                        child.params.value = child.params.value.replace(escapeSymbols, "$1");
+                    });
                 this.parsedToken.addChild(token);
             })
             this.closeToken();
