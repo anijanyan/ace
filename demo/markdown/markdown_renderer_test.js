@@ -397,10 +397,10 @@ var commonmarkJson = {
         "markdown": "```",
         "html": "<pre><code></code></pre>"
     },
-    // "97": {//TODO The closing code fence must be at least as long as the opening fence:
-    //     "markdown": "`````\n\n```\naaa",
-    //     "html": "<pre><code>\n```\naaa</code></pre>"
-    // },
+    "97": {
+        "markdown": "`````\n\n```\naaa",
+        "html": "<pre><code>\n```\naaa</code></pre>"
+    },
     // "98": {//TODO wrong token
     //     "markdown": "> ```\n> aaa\n\nbbb",
     //     "html": "<blockquote><pre><code>aaa</code></pre></blockquote><p>bbb</p>"
@@ -437,10 +437,10 @@ var commonmarkJson = {
         "markdown": "   ```\naaa\n  ```",
         "html": "<pre><code>aaa</code></pre>"
     },
-    // "107": {//TODO wrong token: 4space indented fences are not closing code block
-    //     "markdown": "```\naaa\n    ```",
-    //     "html": "<pre><code>aaa\n    ```</code></pre>"
-    // },
+    "107": {
+        "markdown": "```\naaa\n    ```",
+        "html": "<pre><code>aaa\n    ```</code></pre>"
+    },
     // "108": {//TODO wrong token: Code fences (opening and closing) cannot contain internal spaces (oneline code
     //  // blocks should be codespan within paragraph):
     //     "markdown": "``` ```\naaa",
@@ -1049,7 +1049,7 @@ var commonmarkJson = {
     //     "markdown": "1.     indented code\n\n   paragraph\n\n       more code",
     //     "html": "<ol><li><pre><code>indented code</code></pre><p>paragraph</p><pre><code>more code</code></pre></li></ol>"
     // },
-    // "252": {
+    // "252": {//TODO indented code in same line as list start?
     //     "markdown": "1.      indented code\n\n   paragraph\n\n       more code",
     //     "html": "<ol><li><pre><code> indented code</code></pre><p>paragraph</p><pre><code>more code</code></pre></li></ol>"
     // },
@@ -1121,14 +1121,14 @@ var commonmarkJson = {
         "markdown": "  1.  A paragraph\n    with two lines.",
         "html": "<ol><li>A paragraph\nwith two lines.</li></ol>"
     },
-    // "270": {//TODO blockquote in list
-    //     "markdown": "> 1. > Blockquote\ncontinued here.",
-    //     "html": "<blockquote><ol><li><blockquote><p>Blockquote\ncontinued here.</p></blockquote></li></ol></blockquote>"
-    // },
-    // "271": {//TODO blockquote in list
-    //     "markdown": "> 1. > Blockquote\n> continued here.",
-    //     "html": "<blockquote><ol><li><blockquote><p>Blockquote\ncontinued here.</p></blockquote></li></ol></blockquote>"
-    // },
+    "270": {
+        "markdown": "> 1. > Blockquote\ncontinued here.",
+        "html": "<blockquote><ol><li><blockquote><p>Blockquote\ncontinued here.</p></blockquote></li></ol></blockquote>"
+    },
+    "271": {
+        "markdown": "> 1. > Blockquote\n> continued here.",
+        "html": "<blockquote><ol><li><blockquote><p>Blockquote\ncontinued here.</p></blockquote></li></ol></blockquote>"
+    },
     "272": {
         "markdown": "- foo\n  - bar\n    - baz\n      - boo",
         "html": "<ul><li>foo<ul><li>bar<ul><li>baz<ul><li>boo</li></ul></li></ul></li></ul></li></ul>"
@@ -1229,10 +1229,10 @@ var commonmarkJson = {
         "markdown": "- a\n- b\n\n  c\n- d",
         "html": "<ul><li><p>a</p></li><li><p>b</p><p>c</p></li><li><p>d</p></li></ul>"
     },
-    // "297": {//TODO link
-    //     "markdown": "- a\n- b\n\n  [ref]: /url\n- d",
-    //     "html": "<ul><li><p>a</p></li><li><p>b</p></li><li><p>d</p></li></ul>"
-    // },
+    "297": {
+        "markdown": "- a\n- b\n\n  [ref]: /url\n- d",
+        "html": "<ul><li><p>a</p></li><li><p>b</p></li><li><p>d</p></li></ul>"
+    },
     // "298": {//TODO wrong token: b should be codeblock, not codespan
     //     "markdown": "- a\n- ```\n  b\n\n\n  ```\n- c",
     //     "html": "<ul><li>a</li><li><pre><code>b\n\n</code></pre></li><li>c</li></ul>"
@@ -2806,8 +2806,22 @@ Object.assign(commonmarkJson, Object.fromEntries([
         "markdown": "| f\\|oo  |\n| ------ |\n| b `\\` az |\n| b **\\|** im |",
         "html": "<table><thead><tr><th>f|oo</th></tr></thead><tbody><tr><td>b <code>\\</code> az</td></tr><tr><td>b <strong>|</strong> im</td></tr></tbody></table>"
     },
-
-
+    {
+        "markdown": "*[bar]*\n\n[bar]: /url \"title\"",
+        "html": "<p><em><a href=\"/url\" title=\"title\">bar</a></em></p>"
+    },
+    {
+        "markdown": "**[foo]** bar",
+        "html": "<p><strong>[foo]</strong> bar</p>"
+    },
+    // {//TODO
+    //     "markdown": "1.  foo\n\n    ```\n    bar\n       ```\n\n    baz\n\n    > bam",
+    //     "html": "<ol><li><p>foo</p><pre><code>bar</code></pre><p>baz</p><blockquote><p>bam</p></blockquote></li></ol>"
+    // },
+    {
+        "markdown": "1.  foo\n\n    ```\n    bar\n        ```\n\n    baz\n\n    > bam",
+        "html": "<ol><li><p>foo</p><pre><code>bar\n    ```\n\nbaz\n\n&gt; bam</code></pre></li></ol>"
+    },
 ].map((value, index) => [length + index, value])));
 
 var startFrom = 0;
@@ -2828,8 +2842,8 @@ module.exports = Object.fromEntries(Object.entries(commonmarkJson).map(([index, 
     return [key, function () {
         markdownRenderer.render(markdown);
         var res = resultHtml.innerHTML;
-        res = res.replaceAll(`\\n`, `\n`);//TODO?
-        res = res.replaceAll(`\\\\`, `\\`);//TODO?
+        res = res.replaceAll(`\\n`, `\n`);
+        res = res.replaceAll(`\\\\`, `\\`);
         resultHtml.innerHTML = res;
         assert.equal(resultHtml.innerHTML.toString(), expected.innerHTML.toString());
     }]
