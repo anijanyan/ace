@@ -963,10 +963,7 @@ class MarkdownParser {
                 this.openToken("p");
                 this.openToken("a");
                 this.parsedToken.addTextToken(value);
-                this.parsedToken.params.href = "";
-                if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(value))//TODO
-                    this.parsedToken.params.href = "mailto:";
-                this.parsedToken.params.href += value;
+                this.parsedToken.params.href = value;
                 this.closeToken(2);
                 return;
             case "support.variable":
@@ -982,6 +979,12 @@ class MarkdownParser {
                 options.type = "checkbox";
 
                 this.parsedToken.addToken("input", {options});
+                return;
+            case "url.underline":
+                this.openToken("a", {"href": value, isAutolink: true});
+                this.parsedToken.addTextToken(value);
+                this.closeToken();
+                return;
         }
     }
 

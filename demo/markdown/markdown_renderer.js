@@ -342,12 +342,17 @@ class MarkdownRenderer {
                         }
                     }
 
-                    token.params.href ||= "";
+                    var href = token.params.href || "";
 
                     if (token.tagName === "a") {
-                        options["href"] = encodeURI(token.params.href);
+                        if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(href)) {//TODO
+                            href = "mailto:" + href;
+                        } else if (token.params.isAutolink) {
+                            href = "http://" + href;
+                        }
+                        options["href"] = encodeURI(href);
                     } else {
-                        options["src"] = token.params.href;
+                        options["src"] = href;
                         options["alt"] = token.children[0].params.value;
                         token.children = [];
                     }
