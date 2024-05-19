@@ -969,6 +969,19 @@ class MarkdownParser {
                 this.parsedToken.params.href += value;
                 this.closeToken(2);
                 return;
+            case "support.variable":
+                if (!this.parsedToken.is("li"))
+                    return;
+
+                var options = {};
+                var isChecked = value === "[x]";
+                if (isChecked)
+                    options.checked = "";
+
+                options.disabled = "";
+                options.type = "checkbox";
+
+                this.parsedToken.addToken("input", {options});
         }
     }
 

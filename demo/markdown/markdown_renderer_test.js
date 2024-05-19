@@ -1157,14 +1157,14 @@ var commonmarkJson = {
     //     "markdown": "- # Foo\n- Bar\n  ---\n  baz",
     //     "html": "<ul><li><h1>Foo</h1></li><li><h2>Bar</h2>\nbaz</li></ul>"
     // },
-    /*"279": {//TODO list extensions
+    "279": {
         "markdown": "- [ ] foo\n- [x] bar",
         "html": "<ul><li><input disabled=\"\" type=\"checkbox\"> foo</li><li><input checked=\"\" disabled=\"\" type=\"checkbox\"> bar</li></ul>"
     },
     "280": {
         "markdown": "- [x] foo\n  - [ ] bar\n  - [x] baz\n- [ ] bim",
         "html": "<ul><li><input checked=\"\" disabled=\"\" type=\"checkbox\"> foo<ul><li><input disabled=\"\" type=\"checkbox\"> bar</li><li><input checked=\"\" disabled=\"\" type=\"checkbox\"> baz</li></ul></li><li><input disabled=\"\" type=\"checkbox\"> bim</li></ul>"
-    },*/
+    },
     "281": {
         "markdown": "- foo\n- bar\n+ baz",
         "html": "<ul><li>foo</li><li>bar</li></ul><ul><li>baz</li></ul>"
@@ -2830,22 +2830,28 @@ var upTo = Infinity;
 var resultHtml = dom.buildDom(["div"]);
 var markdownRenderer = new MarkdownRenderer(resultHtml);
 
+function normalizeHtmlString(htmlString) {
+    htmlString = htmlString.replaceAll(`\\n`, `\n`);
+    htmlString = htmlString.replaceAll(`\\\\`, `\\`);
+    htmlString = htmlString.replaceAll(`</input>`, ``);
+
+    var el = document.createElement();
+    el.innerHTML = htmlString;
+    return el.innerHTML.toString();
+}
+
 module.exports = Object.fromEntries(Object.entries(commonmarkJson).map(([index, json]) => {
     if (index < startFrom || index > upTo)
         return [];
     var markdown = json.markdown;
-    var expected = document.createElement();
-    expected.innerHTML = json.html;
+    var expected = normalizeHtmlString(json.html);
 
     var key = `test: example ${index}: "${markdown.replaceAll("\n", "\\n")}"`;
 
     return [key, function () {
         markdownRenderer.render(markdown);
-        var res = resultHtml.innerHTML;
-        res = res.replaceAll(`\\n`, `\n`);
-        res = res.replaceAll(`\\\\`, `\\`);
-        resultHtml.innerHTML = res;
-        assert.equal(resultHtml.innerHTML.toString(), expected.innerHTML.toString());
+        var result = normalizeHtmlString(resultHtml.innerHTML.toString());
+        assert.equal(result, expected);
     }]
 }));
 
