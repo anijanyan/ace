@@ -232,6 +232,7 @@ class MarkdownRenderer {
                 startColumn = startToken.html.length;
             } else {
                 startColumn = Math.max(start.column - startToken.range.start.column, 0);
+                startColumn = Math.min(startColumn, startToken.html.length);
             }
         }
 
@@ -312,87 +313,96 @@ class MarkdownRenderer {
         let l = tokens.length;
         for (let i = 0; i < l; i++) {
             let token = tokens[i];
-            if (token.isReference)
-                continue;
 
-            let arr = [token.tagName];
-            var options = token.options;
-            switch (token.tagName) {
-                case "newLine":
-                    options = null;
-                    arr = "\n";
-                    break;
-                case "textNode":
-                    options = null;
-                    arr = this.getEntityValue(token.params.value);
-                    if (arr.length === 0)
-                        continue;
-                    break;
-                case "a":
-                case "img":
-                    if (token.hasReference) {
-                        const linkLabel = this.getLinkLabel(token);
-                        var foundToken = this.parsedTokens.find((value) => value.isReference && this.getLinkLabel(value) === linkLabel);
-                        if (foundToken) {
-                            token.params.href = foundToken.params.href;
-                            token.params.title = foundToken.params.title;
-                        } else {
-                            dom.buildDom("[" + token.children[0].params.value + "]", parentHtml);
-                            continue;
-                        }
+            var renderToken = () => {
+                if (token.isReference)
+                    return;
+                var calculateOptions = () => {
+                    var arr = [token.tagName];
+                    var options = token.options;
+
+                    switch (token.tagName) {
+                        case "newLine":
+                            return "\n";
+                        case "textNode":
+                            return this.getEntityValue(token.params.value);
+                        case "a":
+                        case "img":
+                            if (token.hasReference) {
+                                const linkLabel = this.getLinkLabel(token);
+                                var foundToken = this.parsedTokens.find((value) => value.isReference && this.getLinkLabel(value) === linkLabel);
+                                if (foundToken) {
+                                    token.params.href = foundToken.params.href;
+                                    token.params.title = foundToken.params.title;
+                                } else {
+                                    token = token.children[0];
+                                    token.params.value = "[" + token.params.value + "]";
+                                    token.range.start.column--;
+                                    token.range.end.column++;
+                                    return this.getEntityValue(token.params.value);
+                                }
+                            }
+
+                            var href = token.params.href || "";
+
+                            if (token.tagName === "a") {
+                                if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(href)) {//TODO
+                                    href = "mailto:" + href;
+                                } else if (token.params.isAutolink) {
+                                    href = "http://" + href;
+                                }
+                                options["href"] = encodeURI(href);
+                            } else {
+                                options["src"] = href;
+                                options["alt"] = token.children[0].params.value;
+                                token.children = [];
+                            }
+                            options["title"] = token.params.title;
+
+                            break;
+                        case "list":
+                            if (token.params.isOrdered) {
+                                arr[0] = "ol";
+                                var start = Number(token.params.start);
+                                if (start !== 1)
+                                    options["start"] = start.toString();
+                            } else {
+                                arr[0] = "ul";
+                            }
+                            break;
+                        case "header":
+                            arr[0] = "h" + token.params.heading;
+                            break;
+                        case "code":
+                            if (token.params.info)
+                                options["class"] = "language-" + token.params.info;
+                            break;
+                        case "htmlBlock":
+                            return;
                     }
+                    if (token.params.isRawHtml)
+                        options = token.attributes;
+                    options && Array.isArray(arr) && arr.push(options);
+                    return arr;
+                }
+                var arr = calculateOptions();
 
-                    var href = token.params.href || "";
+                if (!arr || !arr.length)
+                    return parentHtml;
 
-                    if (token.tagName === "a") {
-                        if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(href)) {//TODO
-                            href = "mailto:" + href;
-                        } else if (token.params.isAutolink) {
-                            href = "http://" + href;
-                        }
-                        options["href"] = encodeURI(href);
-                    } else {
-                        options["src"] = href;
-                        options["alt"] = token.children[0].params.value;
-                        token.children = [];
-                    }
-                    options["title"] = token.params.title;
-
-                    break;
-                case "list":
-                    if (token.params.isOrdered) {
-                        arr[0] = "ol";
-                        var start = Number(token.params.start);
-                        if (start !== 1)
-                            options["start"] = start.toString();
-                    } else {
-                        arr[0] = "ul";
-                    }
-                    break;
-                case "header":
-                    arr[0] = "h" + token.params.heading;
-                    break;
-                case "code":
-                    if (token.params.info)
-                        options["class"] = "language-" + token.params.info;
-                    break;
-                case "htmlBlock":
-                    this.renderTokens(token.children, parentHtml);
-                    continue;
+                var html = dom.buildDom(arr, parentHtml);
+                if (typeof html === "object")
+                    html.$token = token;
+                token.html = html;
+                if (token.tagName === "textNode")
+                    this.addToRowToToken(token);
+                return html;
             }
-            if (token.params.isRawHtml)
-                options = token.attributes;
-            options && arr.push(options);
-            let html = dom.buildDom(arr, parentHtml);
 
-            if (typeof html === "object")
-                html.$token = token;
-            token.html = html;
-            if (token.children.length) {
+            var html = renderToken();
+
+             if (token.children.length)
                 this.renderTokens(token.children, html);
-            } else if (token.tagName === "textNode") {
-                this.addToRowToToken(token);
-            }
         }
     }
 
