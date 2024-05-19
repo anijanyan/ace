@@ -238,8 +238,13 @@ class MarkdownRenderer {
 
         var endTokens = this.rowToTokens[endRow];
         if (endRow !== end.row) {
+            if (endRow > end.row) {
             endToken = endTokens[0];
             endColumn = 0;
+            } else {
+                endToken = endTokens[endTokens.length - 1];
+                endColumn = endToken.html.length;
+            }
         } else {
             endToken = endTokens.findLast((token) => token.range.intersects(selectionRange));
             endToken ||= endTokens[0];
