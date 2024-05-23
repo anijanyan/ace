@@ -350,10 +350,10 @@ class MarkdownRenderer {
 
                             var href = token.params.href || "";
 
-                            if (token.tagName === "a") {
-                                if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(href)) {//TODO
+                            if (token.is("a")) {
+                                if (token.isMail()) {
                                     href = "mailto:" + href;
-                                } else if (token.params.isAutolink) {
+                                } else if (token.params.isAutolink && !href.startsWith("http")) {
                                     href = "http://" + href;
                                 }
                                 options["href"] = encodeURI(href);

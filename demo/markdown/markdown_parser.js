@@ -13,6 +13,10 @@ var row = 0;
 var column = 0;
 var endColumn = 0;
 
+function isMail(href) {
+    return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(href);
+}
+
 class MarkdownToken {
     tagName;
     children = [];
@@ -80,6 +84,10 @@ class MarkdownToken {
 
     is(tagName) {
         return typeof tagName === "string" ? this.tagName === tagName : tagName.includes(this.tagName);
+    }
+
+    isMail() {
+        return isMail(this.params.href);
     }
 
     parentIs(tagName) {
@@ -981,9 +989,31 @@ class MarkdownParser {
                 this.parsedToken.addToken("input", {options});
                 return;
             case "url.underline":
+                if (isMail(value) && this.nextToken && ["-", "_"].includes(this.nextToken.value)) {
+                    this.parsedToken.addTextToken(value);
+                    return;
+                }
+                var trailingParentheses = "";
+                if (value.endsWith(")")) {
+                    var openingParenthesesCount = (value.match(/\(/g) || []).length;
+                    var closingParenthesesCount = value.match(/\)/g).length;
+
+
+
+                    while (openingParenthesesCount < closingParenthesesCount && value.endsWith(")")) {
+                        trailingParentheses += ")";
+                        value = value.slice(0, -1);
+                        closingParenthesesCount--;
+                    }
+
+                }
+
                 this.openToken("a", {"href": value, isAutolink: true});
+
                 this.parsedToken.addTextToken(value);
                 this.closeToken();
+                if (trailingParentheses.length)
+                    this.parsedToken.addTextToken(trailingParentheses);
                 return;
         }
     }
