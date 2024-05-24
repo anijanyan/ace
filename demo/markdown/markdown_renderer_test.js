@@ -2827,8 +2827,7 @@ Object.assign(commonmarkJson, Object.fromEntries([
 var startFrom = 0;
 var upTo = Infinity;
 
-var resultHtml = dom.buildDom(["div"]);
-var markdownRenderer = new MarkdownRenderer(resultHtml);
+var markdownRenderer = new MarkdownRenderer();
 
 function normalizeHtmlString(htmlString) {
     htmlString = htmlString.replaceAll(`\\n`, `\n`);
@@ -2840,18 +2839,21 @@ function normalizeHtmlString(htmlString) {
     return el.innerHTML.toString();
 }
 
-module.exports = Object.fromEntries(Object.entries(commonmarkJson).map(([index, json]) => {
+function assertEqualNormalized(actual, expected) {
+    actual = normalizeHtmlString(actual);
+    expected = normalizeHtmlString(expected);
+    assert.equal(actual, expected);
+}
+
+module.exports = Object.fromEntries(Object.entries(commonmarkJson).map(([index, {markdown, html}]) => {
     if (index < startFrom || index > upTo)
         return [];
-    var markdown = json.markdown;
-    var expected = normalizeHtmlString(json.html);
 
     var key = `test: example ${index}: "${markdown.replaceAll("\n", "\\n")}"`;
 
     return [key, function () {
-        markdownRenderer.render(markdown);
-        var result = normalizeHtmlString(resultHtml.innerHTML.toString());
-        assert.equal(result, expected);
+        var resultHtml = markdownRenderer.render(markdown);
+        assertEqualNormalized(resultHtml, html);
     }]
 }));
 

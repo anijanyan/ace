@@ -432,9 +432,8 @@ class MarkdownParser {
             case "code":
                 if (type.name !== "codeSpan") {
                     this.openToken("pre");
-                } else {
-                    if (!this.parsedToken)
-                        this.openToken("p");
+                } else if (!this.parsedToken) {
+                    this.openToken("p");
                 }
                 params.name = type.name;
                 switch (type.name) {
