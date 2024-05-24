@@ -47,22 +47,44 @@ class MarkdownSyncController {
         this.markdownRenderer.resultHTML.addEventListener("scroll", this.resultScrollTimer);
     }
 
-    markdownResultSelect = () => {
+    isNodeInResultHtml = (node) => {
+        let currentNode = node;
+        while (currentNode) {
+            if (currentNode === this.markdownRenderer.resultHTML)
+                return true;
+            currentNode = currentNode.parentNode;
+        }
+        return false;
+    }
+
+    markdownResultSelect = (e) => {
         if (this.selectSetFrom === "editor") {
             this.selectSetFrom = null;
             return;
         }
-        this.selectSetFrom = "result";
 
+        this.selectSetFrom = "result";
         this.clearHighlights();
 
         var selection = window.getSelection();
+
         if (selection.type === "None") {
             this.markdownRenderer.editor.clearSelection();
             return;
         }
 
-        let range  = selection.getRangeAt(0);
+        var range  = selection.getRangeAt(0);
+
+        if (!this.isNodeInResultHtml(range.startContainer)) {
+            if (this.isNodeInResultHtml(range.endContainer)) {
+                range.setStart(this.markdownRenderer.resultHTML.firstChild, 0);
+                selection.addRange(range);
+            }
+
+            return;
+        }
+
+
         if (this.resultSelectionRange &&
             this.resultSelectionRange.startContainer === range.startContainer &&
             this.resultSelectionRange.startOffset === range.startOffset &&
@@ -89,6 +111,7 @@ class MarkdownSyncController {
         var aceRange = Range.fromPoints(start, end);
         this.markdownRenderer.editor.session.selection.setSelectionRange(aceRange);
     }
+
 
     markdownResultScroll = () => {
         if (this.scrollSetFrom === "editor") {
@@ -163,7 +186,6 @@ class MarkdownSyncController {
             return;
         }
         this.selectSetFrom = "editor";
-
         var selectionRanges = this.markdownRenderer.editor.selection.getAllRanges();
 
         if (this.selectionRanges.toString() === selectionRanges.toString())
