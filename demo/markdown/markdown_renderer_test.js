@@ -2822,6 +2822,10 @@ Object.assign(commonmarkJson, Object.fromEntries([
         "markdown": "1.  foo\n\n    ```\n    bar\n        ```\n\n    baz\n\n    > bam",
         "html": "<ol><li><p>foo</p><pre><code>bar\n    ```\n\nbaz\n\n&gt; bam</code></pre></li></ol>"
     },
+    // {//TODO wrong token
+    //     "markdown": "* [foo](foo_url)\n  * [bar](bar_url)",
+    //     "html": "<ul><li><a href=\"foo_url\">foo</a><ul><li><a href=\"bar_url\">bar</a></li></ul></li></ul>"
+    // },
 ].map((value, index) => [length + index, value])));
 
 var startFrom = 0;
