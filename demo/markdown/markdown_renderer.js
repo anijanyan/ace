@@ -15,7 +15,7 @@ class MarkdownRenderer {
     resultHTML;
     markdownParser;
 
-    parsedTokens;
+    parsedTokens = [];
     parsedString = "";
 
     entityRegexp;
