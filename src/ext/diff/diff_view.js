@@ -27,6 +27,7 @@ class DiffView extends BaseDiffView {
         this.onChangeTheme = this.onChangeTheme.bind(this);
         this.onMouseWheel = this.onMouseWheel.bind(this);
         this.onScroll = this.onScroll.bind(this);
+        this.onHorizontalScroll = this.onHorizontalScroll.bind(this);
 
         this.$setupModels(diffModel);
 
@@ -92,45 +93,38 @@ class DiffView extends BaseDiffView {
     }
 
     onScroll(e, session) {
-        this.syncScroll(this.sessionA === session ? this.editorA.renderer : this.editorB.renderer);
+        this.syncScroll(session);
+    }
+
+    onHorizontalScroll(e, session) {
+        this.syncScroll(session, "horizontal");
     }
 
     /**
-     * @param {import("../../virtual_renderer").VirtualRenderer} renderer
+     * @param {import("../../edit_session").EditSession} session
+     * @param {string} direction vertical or horizontal
      */
-    syncScroll(renderer) {
-        if (this.$syncScroll == false) return;
-
+    syncScroll(session, direction = "vertical") {
         var r1 = this.editorA.renderer;
         var r2 = this.editorB.renderer;
-        var isOrig = renderer == r1;
-        if (r1["$scrollAnimation"] && r2["$scrollAnimation"]) return;
+        var isOrig = this.sessionA === session;
+        var renderer = isOrig ? r1 : r2;
+        var isVertical = direction === "vertical";
 
         var now = Date.now();
-        if (this.scrollSetBy != renderer && now - this.scrollSetAt < 500) return;
+        let currentPos = isVertical ? renderer.session.getScrollTop() : renderer.session.getScrollLeft();
 
-        var r = isOrig ? r1 : r2;
-        if (this.scrollSetBy != renderer) {
-            if (isOrig && this.scrollA == r.session.getScrollTop()) return; else if (!isOrig && this.scrollB
-                == r.session.getScrollTop()) return;
+        if (this.$syncScroll || r1["$scrollAnimation"] && r2["$scrollAnimation"]//TODO part of these checks seems excess
+            || this.scrollSetBy !== renderer && now - this.scrollSetAt < 500) {
+            return;
         }
         var rOther = isOrig ? r2 : r1;
+        var targetPos = currentPos;//for now target equal to current, but may be changed
 
-        var targetPos = r.session.getScrollTop();
-
-        this.$syncScroll = false;
-
-        if (isOrig) {
-            this.scrollA = r.session.getScrollTop();
-            this.scrollB = targetPos;
-        }
-        else {
-            this.scrollA = targetPos;
-            this.scrollB = r.session.getScrollTop();
-        }
-        this.scrollSetBy = renderer;
-        rOther.session.setScrollTop(targetPos);
         this.$syncScroll = true;
+        this.scrollSetBy = renderer;
+        isVertical ? rOther.session.setScrollTop(targetPos) : rOther.session.setScrollLeft(targetPos);
+        this.$syncScroll = false;
         this.scrollSetAt = now;
     }
 
@@ -162,6 +156,7 @@ class DiffView extends BaseDiffView {
      */
     $attachSessionEventHandlers(editor, marker) {
         editor.session.on("changeScrollTop", this.onScroll);
+        editor.session.on("changeScrollLeft", this.onHorizontalScroll);
         editor.session.on("changeFold", this.onChangeFold);
         // @ts-expect-error
         editor.session.addDynamicMarker(marker);
@@ -183,6 +178,7 @@ class DiffView extends BaseDiffView {
      */
     $detachSessionHandlers(editor, marker) {
         editor.session.off("changeScrollTop", this.onScroll);
+        editor.session.off("changeScrollLeft", this.onHorizontalScroll);
         editor.session.off("changeFold", this.onChangeFold);
         editor.session.removeMarker(marker.id);
         editor.selection.off("changeCursor", this.onSelect);
